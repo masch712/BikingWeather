@@ -1,0 +1,18 @@
+{
+  "name": "biking-weather",
+  "version": "1.0.0",
+  "description": "",
+  "main": "WeatherDao.js",
+  "dependencies": {
+    "lodash": "^4.17.5",
+    "superagent": "^3.8.2"
+  },
+  "devDependencies": {
+    "mocha": "^5.0.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
