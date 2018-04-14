@@ -2,16 +2,18 @@
   "name": "biking-weather",
   "version": "1.0.0",
   "description": "",
-  "main": "WeatherDao.js",
   "dependencies": {
     "lodash": "^4.17.5",
-    "superagent": "^3.8.2"
+    "superagent": "^3.8.2",
+    "alexa-sdk": "1.0.25"
   },
   "devDependencies": {
     "jest": "22.4.3"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "7z a build\\Release\\build.zip .\\node_modules .\\models .\\lambda.js",
+    "deploy": "aws s3 cp .\\build\\Release\\build.zip s3://biking-weather-builds"
   },
   "jest": {
     "setupFiles": ["./test/setup.js"]

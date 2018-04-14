@@ -12,6 +12,7 @@ class WeatherDao {
      * Returns a promise for an array of WeatherForecasts
      * @param {String} state 
      * @param {String} city 
+     * @returns {WeatherForecast[]} forecast for 10 days
      */
     getForecast(state, city) {
         return superagent.get("http://api.wunderground.com/api/" + this.apiKey + "/hourly10day/q/" + state + "/" + city + ".json")
