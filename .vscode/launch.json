@@ -12,6 +12,21 @@
         },
         {
             "type": "node",
+            "name": "vscode-jest-tests",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": [
+                "--runInBand"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "APIKEY": "d6fd8bf1d739f77d"
+            },
+        },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Mocha Tests",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",

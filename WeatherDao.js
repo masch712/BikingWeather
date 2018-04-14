@@ -4,6 +4,7 @@ const WeatherForecast = require('./models/WeatherForecast.js');
 
 class WeatherDao {
     constructor() {
+        //TODO: use convict for config
         this.apiKey = process.env.APIKEY;
     }
 
@@ -26,7 +27,7 @@ class WeatherDao {
 
 function handleError(res) {
     if (res.body.response.error != null) {
-        throw new Error(res.body.response.error.description);
+        throw new Error(JSON.stringify(res.body.response.error));
     }
     return res;
 }
