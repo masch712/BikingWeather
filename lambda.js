@@ -5,6 +5,8 @@
 const Alexa = require('alexa-sdk');
 const WeatherDaoLib = require('./WeatherDao');
 const weatherDao = new WeatherDaoLib();
+const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
+const _ = require('lodash');
 
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
@@ -24,10 +26,14 @@ const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.
 
 const handlers = {
     'BikingWeatherTomorrow': function () {
-        // this.response.cardRenderer(SKILL_NAME, randomFact);
         const forecasts = weatherDao.getForecast('MA', 'Woburn');
-        const speechOutput = forecasts[0].condition;
-        this.response.speak(speechOutput);
+        const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
+        const firstBadWeather = _.find(tomorrowsCommuteForecasts, (forecast) => {
+            return !WeatherForecastUtils.isInSweetSpot(forecast);
+        });
+
+        const isBikingWeather = firstBadWeather ? 'no' : 'yes';
+        this.response.speak(isBikingWeather);
         this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function () {

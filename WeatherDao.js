@@ -20,7 +20,13 @@ class WeatherDao {
         .then(res => res.body.hourly_forecast)
         .then(wunderForecasts => {
             return _.map(wunderForecasts, (wunderForecast) => {
-                return new WeatherForecast(wunderForecast.FCTTIME.epoch, wunderForecast.temp.english, wunderForecast.windchill.english, wunderForecast.condition);
+                return new WeatherForecast(
+                    wunderForecast.FCTTIME.epoch, 
+                    wunderForecast.temp.english, 
+                    wunderForecast.windchill.english, 
+                    wunderForecast.condition,
+                    wunderForecast.pop
+                );
             })
         });
     }
