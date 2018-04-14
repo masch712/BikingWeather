@@ -5,7 +5,8 @@ const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 jest.mock('../WeatherDao');
 
 describe('BikingWeatherTomorrow Intent', () => {
-    it('calls getForecast', () => {
+
+    it('speaks "yes" for good weather', () => {
         const expectedForecast = new WeatherForecast(1, 1, 1, '');
         WeatherDao.mockImplementation(() => {
             return { getForecast: (state, city) => {
@@ -32,7 +33,8 @@ describe('BikingWeatherTomorrow Intent', () => {
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
         expect(mockAlexa.response.speak.mock.calls[0][0]).toBe('yes');
     });
-    it('returns no for bad weather', () => {
+
+    it('speaks "no" for bad weather', () => {
         const expectedForecast = new WeatherForecast(1, 1, 1, '');
         WeatherDao.mockImplementation(() => {
             return { getForecast: (state, city) => {

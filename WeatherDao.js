@@ -21,7 +21,7 @@ class WeatherDao {
         .then(wunderForecasts => {
             return _.map(wunderForecasts, (wunderForecast) => {
                 return new WeatherForecast(
-                    wunderForecast.FCTTIME.epoch, 
+                    wunderForecast.FCTTIME.epoch * 1000, 
                     wunderForecast.temp.english, 
                     wunderForecast.windchill.english, 
                     wunderForecast.condition,

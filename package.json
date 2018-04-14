@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "7z a build\\Release\\build.zip .\\node_modules .\\models .\\lambda.js",
+    "build": "7z a build\\Release\\build.zip .\\node_modules .\\lib .\\models .\\*.js",
     "deploy": "aws s3 cp .\\build\\Release\\build.zip s3://biking-weather-builds"
   },
   "jest": {
