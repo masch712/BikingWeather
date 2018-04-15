@@ -25,15 +25,22 @@ const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.
 //=========================================================================================================================================
 
 const handlers = {
-    'BikingWeatherTomorrow': function () {
-        const forecasts = weatherDao.getForecast('MA', 'Woburn');
-        const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
-        const firstBadWeather = _.find(tomorrowsCommuteForecasts, (forecast) => {
-            return !WeatherForecastUtils.isInSweetSpot(forecast);
-        });
+    'BikingWeatherTomorrow': async function () {
+        try {
+            const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+            console.log('forecasts: ' + JSON.stringify(forecasts));
+            const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
+            const firstBadWeather = _.find(tomorrowsCommuteForecasts, (forecast) => {
+                return !WeatherForecastUtils.isInSweetSpot(forecast);
+            });
 
-        const isBikingWeather = firstBadWeather ? 'no' : 'yes';
-        this.response.speak(isBikingWeather);
+            const isBikingWeather = firstBadWeather ? 'no' : 'yes';
+            console.log('***wtf***');
+            this.response.speak(isBikingWeather);
+        }
+        catch (err) {
+            this.response.speak('error');
+        }
         this.emit(':responseReady');
     },
     'AMAZON.HelpIntent': function () {
