@@ -28,18 +28,16 @@ const handlers = {
     'BikingWeatherTomorrow': async function () {
         try {
             const forecasts = await weatherDao.getForecast('MA', 'Woburn');
-            console.log('forecasts: ' + JSON.stringify(forecasts));
             const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
             const firstBadWeather = _.find(tomorrowsCommuteForecasts, (forecast) => {
                 return !WeatherForecastUtils.isInSweetSpot(forecast);
             });
 
             const isBikingWeather = firstBadWeather ? 'no' : 'yes';
-            console.log('***wtf***');
             this.response.speak(isBikingWeather);
         }
         catch (err) {
-            this.response.speak('error');
+            this.response.speak(err + '');
         }
         this.emit(':responseReady');
     },

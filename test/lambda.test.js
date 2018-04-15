@@ -1,9 +1,9 @@
 const WeatherDao = require('../WeatherDao');
 const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-const bikingWeatherLambda = require('../lambda');
 
 jest.mock('../WeatherDao');
+let bikingWeatherLambda;
 
 describe('BikingWeatherTomorrow Intent', () => {
 
@@ -14,6 +14,7 @@ describe('BikingWeatherTomorrow Intent', () => {
                 getForecast: mock_getForecast
             };
         });
+        bikingWeatherLambda = require('../lambda');
     });
 
     it('speaks \'yes\' for good weather', async () => {
@@ -83,7 +84,6 @@ describe('BikingWeatherTomorrow Intent', () => {
         await bikingWeatherLambda.handlers.BikingWeatherTomorrow.apply(mockAlexa);
 
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
-        console.log(mockAlexa.response.speak.mock.calls);
-        expect(mockAlexa.response.speak.mock.calls[0][0]).toBe('error');
+        expect(mockAlexa.response.speak.mock.calls[0][0]).toBe(expectedError + '');
     });
 });
