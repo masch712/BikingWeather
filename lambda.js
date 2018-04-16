@@ -41,6 +41,23 @@ const handlers = {
         }
         this.emit(':responseReady');
     },
+    'NextGoodBikingWeather': async function () {
+        try {
+            const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+            const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
+            if (nextGoodCommuteForecasts) {
+                const daysTilGoodString = moment(nextGoodCommuteForecasts[0].msSinceEpoch).fromNow();
+                this.response.speak(daysTilGoodString);
+            }
+            else {
+                this.response.speak("you're doomed, the weather is bad for 10 days.");
+            }
+        }
+        catch (err) {
+            this.response.speak(err + '');
+        }
+        this.emit(':responseReady');
+    },
     'AMAZON.HelpIntent': function () {
         this.response.speak(SPEECH_NOT_IMPLEMENTED);
         this.emit(':responseReady');
