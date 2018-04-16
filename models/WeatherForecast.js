@@ -1,6 +1,6 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-
+moment.tz.setDefault('UTC');
 class WeatherForecast {
     /**
      * 

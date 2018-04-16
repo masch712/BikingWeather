@@ -3,8 +3,8 @@ const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
-const moment = require('moment');
-
+const moment = require('moment-timezone');
+moment.tz.setDefault('UTC');
 const originalWeatherDao = _.clone(WeatherDao);
 jest.mock('../WeatherDao');
 let bikingWeatherLambda;

@@ -1,6 +1,7 @@
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const WeatherForecast = require('../models/WeatherForecast');
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.tz.setDefault('UTC');
 
 describe('getCommuteForecasts', () => {
     it('filters commute times', () => {
