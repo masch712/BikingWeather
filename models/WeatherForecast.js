@@ -1,6 +1,5 @@
 const moment = require('moment-timezone');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-moment.tz.setDefault('UTC');
 class WeatherForecast {
     /**
      * 
@@ -20,6 +19,8 @@ class WeatherForecast {
         this.condition = condition;
         this.precipitationProbability = parseInt(precipitationProbability);
         this.isSweetSpot = WeatherForecastUtils.isInSweetSpot(this);
+        //TODO: get smart about timezones for different locations
+        this.moment_ = moment.tz(moment(this.msSinceEpoch).format("YYYY-MM-DDTHH:mm:SS"), 'America/New_York');
     }
 }
 

@@ -8,7 +8,7 @@ const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 const _ = require('lodash');
 const moment = require('moment-timezone');
-moment.tz.setDefault('UTC');
+
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
 //=========================================================================================================================================
@@ -47,7 +47,7 @@ const handlers = {
             const forecasts = await weatherDao.getForecast('MA', 'Woburn');
             const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
             if (nextGoodCommuteForecasts) {
-                const daysTilGoodString = moment(nextGoodCommuteForecasts[0].msSinceEpoch).fromNow();
+                const daysTilGoodString = nextGoodCommuteForecasts[0].moment_.fromNow();
                 this.response.speak(daysTilGoodString);
             }
             else {
