@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "lodash": "^4.17.5",
-    "superagent": "^3.8.2",
     "alexa-sdk": "1.0.25",
-    "moment": "2.22.0"
+    "lodash": "^4.17.5",
+    "moment": "2.22.0",
+    "moment-timezone": "^0.5.14",
+    "superagent": "^3.8.2"
   },
   "devDependencies": {
     "jest": "22.4.3"
@@ -17,7 +18,9 @@
     "deploy": "aws s3 cp .\\build\\Release\\build.zip s3://biking-weather-builds"
   },
   "jest": {
-    "setupFiles": ["./test/setup.js"]
+    "setupFiles": [
+      "./test/setup.js"
+    ]
   },
   "author": "",
   "license": "ISC"
