@@ -29,6 +29,7 @@ const handlers = {
     'BikingWeatherTomorrow': async function () {
         try {
             const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+            console.dir(forecasts);
             const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
             const firstBadWeather = _.find(tomorrowsCommuteForecasts, (forecast) => {
                 return !WeatherForecastUtils.isInSweetSpot(forecast);
@@ -45,6 +46,7 @@ const handlers = {
     'NextGoodBikingWeather': async function () {
         try {
             const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+            console.dir(forecasts);
             const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
             if (nextGoodCommuteForecasts) {
                 const daysTilGoodString = moment(nextGoodCommuteForecasts[0].msSinceEpoch).fromNow();

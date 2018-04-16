@@ -7,7 +7,9 @@ describe('NextGoodBikingWeather', () => {
 
         await bikingWeatherLambda.handlers.NextGoodBikingWeather.apply(mockAlexa);
 
+        const result = mockAlexa.response.speak.mock.calls[0][0];
+        console.log(result);
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
-        expect(mockAlexa.response.speak.mock.calls[0][0]).not.toMatch(/Error/);
+        expect(result).not.toMatch(/Error/);
     });
 });

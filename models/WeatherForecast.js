@@ -1,3 +1,6 @@
+const moment = require('moment');
+const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
+
 class WeatherForecast {
     /**
      * 
@@ -8,11 +11,15 @@ class WeatherForecast {
      * @param {number} precipitationProbability
      */
     constructor(msSinceEpoch, fahrenheit, windchillFahrenheit, condition, precipitationProbability) {
-        this.msSinceEpoch = msSinceEpoch;
-        this.fahrenheit = fahrenheit;
-        this.windchillFahrenheit = windchillFahrenheit;
+        this.msSinceEpoch = parseInt(msSinceEpoch);
+        this.dateISO = moment(msSinceEpoch).toISOString();
+        this.date = moment(msSinceEpoch).toDate();
+        this.day = moment(msSinceEpoch).day();
+        this.fahrenheit = parseInt(fahrenheit);
+        this.windchillFahrenheit = parseInt(windchillFahrenheit);
         this.condition = condition;
-        this.precipitationProbability = precipitationProbability;
+        this.precipitationProbability = parseInt(precipitationProbability);
+        this.isSweetSpot = WeatherForecastUtils.isInSweetSpot(this);
     }
 }
 
