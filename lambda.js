@@ -7,6 +7,7 @@ const WeatherDaoLib = require('./WeatherDao');
 const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 const _ = require('lodash');
+const moment = require('moment');
 
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
@@ -35,6 +36,23 @@ const handlers = {
 
             const isBikingWeather = firstBadWeather ? 'no' : 'yes';
             this.response.speak(isBikingWeather);
+        }
+        catch (err) {
+            this.response.speak(err + '');
+        }
+        this.emit(':responseReady');
+    },
+    'NextGoodBikingWeather': async function () {
+        try {
+            const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+            const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
+            if (nextGoodCommuteForecasts) {
+                const daysTilGoodString = moment(nextGoodCommuteForecasts[0].msSinceEpoch).fromNow();
+                this.response.speak(daysTilGoodString);
+            }
+            else {
+                this.response.speak("you're doomed, the weather is bad for 10 days.");
+            }
         }
         catch (err) {
             this.response.speak(err + '');
