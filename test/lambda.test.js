@@ -110,6 +110,6 @@ describe('NextGoodBikingWeather Intent', () => {
         await bikingWeatherLambda.handlers.NextGoodBikingWeather.apply(mockAlexa);
 
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
-        expect(mockAlexa.response.speak.mock.calls[0][0]).toBe('in 4 days');
+        expect(mockAlexa.response.speak.mock.calls[0][0]).toMatch(/in (3|4) days/);
     });
 })
