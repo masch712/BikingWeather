@@ -3,6 +3,7 @@ const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
+const moment = require('moment');
 
 const originalWeatherDao = _.clone(WeatherDao);
 jest.mock('../WeatherDao');
@@ -85,9 +86,23 @@ describe('BikingWeatherTomorrow Intent', () => {
 
 describe('NextGoodBikingWeather Intent', () => {
     it('says how many days til good weather', async () => {
-        const expectedForecasts = [];//TODO: actually write this test, cuz shit is acting weird.  and is hard to debug.
+        const expectedGoodCommuteForcasts = [];
+        const allForecasts = [];
+        const baseMoment = moment().hour(0);
+        const niceDay = 4;
+        for (let hr = 0; hr < 24 * 10; hr ++) {
+            const forecastMoment = moment(baseMoment).add(hr, 'hours');
+            const forecast = new WeatherForecast(forecastMoment.valueOf(), 1, 1, 'poo', 99);
+            if (Math.floor(hr / 24) == niceDay) {
+                forecast.fahrenheit = WeatherForecastUtils.SWEETSPOT_MIN_TEMP + 1;
+                forecast.precipitationProbability = 0;
+                expect(WeatherForecastUtils.isInSweetSpot(forecast)).toBeTruthy();
+                expectedGoodCommuteForcasts.push(forecast);
+            }
+            allForecasts.push(forecast);
+        }
         mock_getForecast.mockImplementationOnce((state, city) => {
-            return Promise.resolve(expectedForecasts);
+            return Promise.resolve(allForecasts);
         });
 
         const mockAlexa = utils.mockAlexa();
@@ -95,6 +110,6 @@ describe('NextGoodBikingWeather Intent', () => {
         await bikingWeatherLambda.handlers.NextGoodBikingWeather.apply(mockAlexa);
 
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
-        expect(mockAlexa.response.speak.mock.calls[0][0]).toBe('in a day');
+        expect(mockAlexa.response.speak.mock.calls[0][0]).toBe('in 4 days');
     });
 })

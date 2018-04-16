@@ -7,6 +7,7 @@ const WeatherDaoLib = require('./WeatherDao');
 const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 const _ = require('lodash');
+const moment = require('moment');
 
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
