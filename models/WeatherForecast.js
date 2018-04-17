@@ -20,7 +20,7 @@ class WeatherForecast {
         this.precipitationProbability = parseInt(precipitationProbability);
         this.isSweetSpot = WeatherForecastUtils.isInSweetSpot(this);
         //TODO: get smart about timezones for different locations
-        this.moment_ = moment.tz(moment(this.msSinceEpoch).format("YYYY-MM-DDTHH:mm:SS"), 'America/New_York');
+        this.moment_ = moment.tz(moment(this.msSinceEpoch).format("YYYY-MM-DDTHH:mm:ss"), 'America/New_York');
     }
 }
 
