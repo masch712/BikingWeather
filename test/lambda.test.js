@@ -88,7 +88,7 @@ describe('NextGoodBikingWeather Intent', () => {
     it('says how many days til good weather', async () => {
         const expectedGoodCommuteForcasts = [];
         const allForecasts = [];
-        const baseMoment = moment().hour(0);
+        const baseMoment = moment().hour(0).day(0);
         const niceDay = 4;
         for (let hr = 0; hr < 24 * 10; hr ++) {
             const forecastMoment = moment(baseMoment).add(hr, 'hours');
@@ -110,6 +110,6 @@ describe('NextGoodBikingWeather Intent', () => {
         await bikingWeatherLambda.handlers.NextGoodBikingWeather.apply(mockAlexa);
 
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
-        expect(mockAlexa.response.speak.mock.calls[0][0]).toMatch(/in (3|4) days/);
+        expect(mockAlexa.response.speak.mock.calls[0][0]).toEqual(expectedGoodCommuteForcasts[0].moment_.fromNow());
     });
 })

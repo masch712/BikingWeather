@@ -31,7 +31,7 @@ describe('getFirstGoodCommuteDayForecasts', () => {
         let expectedGoodCommuteForecasts = [];
         let commuteStart = 6;
         let commuteEnd = 8;
-        let baseMoment = moment(0);
+        let baseMoment = moment().hour(0).day(0);
         let goodDay = 3;
         for (var hr = 0; hr <= 24 * 7; hr++) {
             const forecastMoment = moment(baseMoment).add(hr, 'hours');
