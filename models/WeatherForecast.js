@@ -1,5 +1,6 @@
 const moment = require('moment-timezone');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
+const { DateTime } = require('luxon');
 class WeatherForecast {
     /**
      * 
@@ -20,7 +21,8 @@ class WeatherForecast {
         this.precipitationProbability = parseInt(precipitationProbability);
         this.isSweetSpot = WeatherForecastUtils.isInSweetSpot(this);
         //TODO: get smart about timezones for different locations
-        this.moment_ = moment.tz(moment(this.msSinceEpoch).format("YYYY-MM-DDTHH:mm:ss"), 'America/New_York');
+        // this.moment_ = WeatherForecastUtils.epochMillisToTz(this.msSinceEpoch, 'America/New_York');
+        this.dateTime = DateTime.fromMillis(this.msSinceEpoch, {zone: 'America/New_York'});
     }
 }
 

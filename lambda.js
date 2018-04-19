@@ -8,6 +8,8 @@ const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 const _ = require('lodash');
 const moment = require('moment-timezone');
+const logger = require('./lib/Logger');
+const { DateTime } = require('luxon');
 
 //=========================================================================================================================================
 //TODO: The items below this comment need your attention.
@@ -30,6 +32,9 @@ const handlers = {
         try {
             const forecasts = await weatherDao.getForecast('MA', 'Woburn');
             const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
+            if (tomorrowsCommuteForecasts.length < 1) {
+                throw new Error('unable to retrieve tomorrow\'s forecast');
+            }
             const firstBadWeather = _.find(tomorrowsCommuteForecasts, (forecast) => {
                 return !WeatherForecastUtils.isInSweetSpot(forecast);
             });
@@ -47,7 +52,9 @@ const handlers = {
             const forecasts = await weatherDao.getForecast('MA', 'Woburn');
             const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
             if (nextGoodCommuteForecasts) {
-                const daysTilGoodString = nextGoodCommuteForecasts[0].moment_.fromNow();
+                debugger;
+                const durationTilGood = Math.ceil(nextGoodCommuteForecasts[0].dateTime.diffNow('days').days);
+                const daysTilGoodString = `in ${durationTilGood} days`;
                 this.response.speak(daysTilGoodString);
             }
             else {

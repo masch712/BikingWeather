@@ -4,6 +4,7 @@ const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
 const moment = require('moment-timezone');
+const { DateTime } = require('luxon');
 moment.tz.setDefault('UTC');
 const originalWeatherDao = _.clone(WeatherDao);
 jest.mock('../WeatherDao');
@@ -88,11 +89,12 @@ describe('NextGoodBikingWeather Intent', () => {
     it('says how many days til good weather', async () => {
         const expectedGoodCommuteForcasts = [];
         const allForecasts = [];
-        const baseMoment = moment().hour(0).day(0);
+        const baseDateTime = DateTime.local().setZone('America/New_York').set({ minute: 0, second: 0, millisecond: 0});
         const niceDay = 4;
         for (let hr = 0; hr < 24 * 10; hr ++) {
-            const forecastMoment = moment(baseMoment).add(hr, 'hours');
-            const forecast = new WeatherForecast(forecastMoment.valueOf(), 1, 1, 'poo', 99);
+            const forecastDateTime = baseDateTime.plus({ hours: hr });
+            //TODO: is valueOf() giving me the right shit here?
+            const forecast = new WeatherForecast(forecastDateTime.valueOf(), 1, 1, 'poo', 99);
             if (Math.floor(hr / 24) == niceDay) {
                 forecast.fahrenheit = WeatherForecastUtils.SWEETSPOT_MIN_TEMP + 1;
                 forecast.precipitationProbability = 0;
@@ -110,6 +112,6 @@ describe('NextGoodBikingWeather Intent', () => {
         await bikingWeatherLambda.handlers.NextGoodBikingWeather.apply(mockAlexa);
 
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
-        expect(mockAlexa.response.speak.mock.calls[0][0]).toEqual(expectedGoodCommuteForcasts[0].moment_.fromNow());
+        expect(mockAlexa.response.speak.mock.calls[0][0]).toEqual(`in ${niceDay} days`);
     });
 })
