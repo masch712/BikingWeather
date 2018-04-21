@@ -48,7 +48,8 @@ class WeatherDao {
      * @return {Promise} Promise for WeatherForecast[] forecast for 10 days
      */
   async getForecastFromService(state, city) {
-    return superagent.get('http://api.wunderground.com/api/' + this.apiKey + '/hourly10day/q/' + state + '/' + city + '.json')
+    return superagent.get('http://api.wunderground.com/api/'
+      + this.apiKey + '/hourly10day/q/' + state + '/' + city + '.json')
       .then(handleError)
       .then((res) => res.body.hourly_forecast)
       .then((wunderForecasts) => {
@@ -68,9 +69,11 @@ class WeatherDao {
   }
 
   async getForecasts(state, city) {
-    const baseDateTime = DateTime.local().setZone('America/New_York').set({minute: 0, second: 0, millisecond: 0});
+    const baseDateTime = DateTime.local().setZone('America/New_York')
+      .set({minute: 0, second: 0, millisecond: 0});
     const baseMillis = baseDateTime.valueOf();
-    const allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * 10), MILLIS_PER_HOUR);
+    const allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * 10),
+      MILLIS_PER_HOUR);
     debugger;
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
@@ -112,9 +115,10 @@ class WeatherDao {
   }
 
   /**
-     * Upsert forecasts.
-     * @param {WeatherForecast[]} forecasts
-     */
+   * Upsert forecasts.
+   * @param {WeatherForecast[]} forecasts
+   * @return {Promise}
+   */
   async putForecastsToDb(forecasts) {
     const promise = new Promise((resolve, reject) => {
       docClient.batchWrite({
