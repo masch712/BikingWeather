@@ -5,20 +5,20 @@ describe('WeatherDao', function() {
   const weatherDao = new WeatherDao;
   describe('#getForecast(MA, Woburn)', function() {
     it('should return a forecast', function() {
-        expect(process.env.APIKEY).toBeDefined();
-        const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');
-        return forecastPromise.then(function (forecasts) {
-            expect(forecasts.length).toBe(240);
-            expect(forecasts[0].msSinceEpoch).toBeDefined();
-        });
+      expect(process.env.APIKEY).toBeDefined();
+      const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');
+      return forecastPromise.then(function(forecasts) {
+        expect(forecasts.length).toBe(240);
+        expect(forecasts[0].msSinceEpoch).toBeDefined();
+      });
     });
   });
 
   describe('DynamoDB', () => {
     beforeAll(async () => {
       try {
-      await weatherDao.dropTable();
-      await weatherDao.createTable();
+        await weatherDao.dropTable();
+        await weatherDao.createTable();
       } catch (err) {
         throw err;
       }
@@ -30,11 +30,10 @@ describe('WeatherDao', function() {
         const putResult = await weatherDao.putForecastsToDb(forecasts);
         expect(putResult).toEqual({UnprocessedItems: {}});
         const dbResult = await weatherDao.getForecasts('MA', 'Woburn');
-        const dbForecasts = _.map(dbResult.Responses, response => response.forecast);
+        const dbForecasts = _.map(dbResult.Responses, (response) => response.forecast);
         debugger;
         expect(dbForecasts).toEqual(forecasts);
       });
-    })
-    
+    });
   });
 });
