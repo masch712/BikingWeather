@@ -24,6 +24,5 @@ describe('BikingWeatherTomorrow', () => {
         console.log(result);
         expect(mockAlexa.response.speak.mock.calls.length).toBe(1);
         expect(result).not.toMatch(/Error/);
-        throw null;
     });
 });

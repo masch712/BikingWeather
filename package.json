@@ -4,9 +4,9 @@
   "description": "",
   "dependencies": {
     "alexa-sdk": "1.0.25",
+    "aws-sdk": "^2.226.1",
     "lodash": "^4.17.5",
     "luxon": "^1.0.0",
-    "moment-timezone": "^0.5.14",
     "superagent": "^3.8.2",
     "winston": "^3.0.0-rc4"
   },

@@ -3,9 +3,7 @@ const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
-const moment = require('moment-timezone');
 const { DateTime } = require('luxon');
-moment.tz.setDefault('UTC');
 const originalWeatherDao = _.clone(WeatherDao);
 jest.mock('../WeatherDao');
 let bikingWeatherLambda;
@@ -89,20 +87,24 @@ describe('NextGoodBikingWeather Intent', () => {
     it('says how many days til good weather', async () => {
         const expectedGoodCommuteForcasts = [];
         const allForecasts = [];
-        const baseDateTime = DateTime.local().setZone('America/New_York').set({ minute: 0, second: 0, millisecond: 0});
-        const niceDay = 4;
+        const baseDateTime = DateTime.local().setZone('America/New_York').set({ hour: 0, minute: 0, second: 0, millisecond: 0});
+        
         for (let hr = 0; hr < 24 * 10; hr ++) {
             const forecastDateTime = baseDateTime.plus({ hours: hr });
-            //TODO: is valueOf() giving me the right shit here?
             const forecast = new WeatherForecast(forecastDateTime.valueOf(), 1, 1, 'poo', 99);
-            if (Math.floor(hr / 24) == niceDay) {
-                forecast.fahrenheit = WeatherForecastUtils.SWEETSPOT_MIN_TEMP + 1;
-                forecast.precipitationProbability = 0;
-                expect(WeatherForecastUtils.isInSweetSpot(forecast)).toBeTruthy();
-                expectedGoodCommuteForcasts.push(forecast);
-            }
             allForecasts.push(forecast);
         }
+        
+        const goodweatherForecasts = getFirstWeekdayForecasts(baseDateTime, allForecasts);
+        goodweatherForecasts.forEach((forecast) => {
+            forecast.fahrenheit = WeatherForecastUtils.SWEETSPOT_MIN_TEMP + 1;
+            forecast.precipitationProbability = 0;
+            expect(WeatherForecastUtils.isInSweetSpot(forecast)).toBeTruthy();
+            expectedGoodCommuteForcasts.push(forecast);
+        });
+        
+        const niceDay = goodweatherForecasts[0].dateTime.diff(baseDateTime, 'day').days;
+
         mock_getForecast.mockImplementationOnce((state, city) => {
             return Promise.resolve(allForecasts);
         });
@@ -115,3 +117,23 @@ describe('NextGoodBikingWeather Intent', () => {
         expect(mockAlexa.response.speak.mock.calls[0][0]).toEqual(`in ${niceDay} days`);
     });
 })
+
+/**
+ * 
+ * @param {DateTime} baseDateTime 
+ * @param {WeatherForecast[]} forecasts 
+ * @returns {WeatherForecast[]} forecasts
+ */
+function getFirstWeekdayForecasts(baseDateTime, forecasts) {
+    let firstWeekdayDelta = 1
+    if (baseDateTime.weekday == 5) {
+        firstWeekdayDelta = 3;
+    }
+
+    const firstWeekdayMorning = baseDateTime.plus({ days: firstWeekdayDelta });
+
+    //same day
+    const firstWeekdayForecasts = _.filter(forecasts, (forecast) => forecast.dateTime.hasSame(firstWeekdayMorning, 'day'));
+
+    return firstWeekdayForecasts;
+}

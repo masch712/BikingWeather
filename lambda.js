@@ -7,7 +7,6 @@ const WeatherDaoLib = require('./WeatherDao');
 const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 const _ = require('lodash');
-const moment = require('moment-timezone');
 const logger = require('./lib/Logger');
 const { DateTime } = require('luxon');
 
