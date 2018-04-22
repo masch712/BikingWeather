@@ -14,7 +14,7 @@ let originalWeatherForecastUtils = _.clone(WeatherForecastUtils);
 beforeAll(() => {
   WeatherDao.mockImplementationOnce(() => {
     return {
-      getForecast: mock_getForecast,
+      getForecasts: mock_getForecast,
     };
   });
   bikingWeatherLambda = require('../lambda');
@@ -126,14 +126,15 @@ describe('NextGoodBikingWeather Intent', () => {
  */
 function getFirstWeekdayForecasts(baseDateTime, forecasts) {
   let firstWeekdayDelta = 1;
-  if (baseDateTime.weekday == 5) {
+  if (_.includes([5, 6], baseDateTime.weekday)) {
     firstWeekdayDelta = 3;
   }
 
   const firstWeekdayMorning = baseDateTime.plus({days: firstWeekdayDelta});
 
   // same day
-  const firstWeekdayForecasts = _.filter(forecasts, (forecast) => forecast.dateTime.hasSame(firstWeekdayMorning, 'day'));
+  const firstWeekdayForecasts = _.filter(forecasts,
+    (forecast) => forecast.dateTime.hasSame(firstWeekdayMorning, 'day'));
 
   return firstWeekdayForecasts;
 }

@@ -74,21 +74,27 @@ class WeatherDao {
     const baseMillis = baseDateTime.valueOf();
     const allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * 10),
       MILLIS_PER_HOUR);
-    debugger;
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
-    return Promise.all(milliChunks, (milliChunk) => {
-      docClient.batchGetAsync({
+    return Promise.map(milliChunks, (milliChunk) => {
+      const req = {
         RequestItems: {
           // TODO: use constant TABLENAME
           Forecasts: {
             Keys: _.map(milliChunk, (millis) => ({millis: millis, citystate: city + state})),
           },
         },
-      });
+      };
+      return docClient.batchGetAsync(req);
     }).then((dataChunks) => {
-      const flattened = _.flatten(dataChunks);
-      return flattened;
+      let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
+      flattened = _.sortBy(flattened, 'msSinceEpoch');
+      debugger;
+      return _.map(flattened, (dbRecord) => {
+        const f = dbRecord.forecast;
+        return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
+          f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
+      });
     });
   }
 
@@ -120,27 +126,31 @@ class WeatherDao {
    * @return {Promise}
    */
   async putForecastsToDb(forecasts) {
-    const promise = new Promise((resolve, reject) => {
-      docClient.batchWrite({
+    console.log('db put: first: ' + forecasts[0].msSinceEpoch + '; last: ' + _.last(forecasts).msSinceEpoch);
+    return Promise.map(_.chunk(forecasts, BATCH_PUT_SIZE), (forecastsChunk) => {
+      return docClient.batchWriteAsync({
         RequestItems: {
-          Forecasts: _.map(forecasts.slice(0, 24), (forecast) => {
+          Forecasts: _.map(forecastsChunk, (forecast) => {
             return {
               PutRequest: {
                 Item: {
                   millis: forecast.msSinceEpoch,
                   citystate: forecast.city + forecast.state,
-                  forecast: forecast,
+                  forecast: forecast.toDbObj(),
                 },
               },
             };
           }),
         },
-      }, (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
       });
+    }).then((dataChunks) => {
+      const unprocessedItems = _.reduce(_.map(dataChunks, (chunk) => chunk.UnprocessedItems),
+        (prev, current) => _.merge(prev, current));
+
+      if (_.keys(unprocessedItems).length > 0) {
+        throw new Error('Failed to put data: ' + unprocessedItems);
+      }
     });
-    return promise;
   }
 }
 

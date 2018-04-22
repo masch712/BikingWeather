@@ -29,7 +29,7 @@ const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.
 const handlers = {
   'BikingWeatherTomorrow': async function() {
     try {
-      const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+      const forecasts = await weatherDao.getForecasts('MA', 'Woburn');
       const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
       if (tomorrowsCommuteForecasts.length < 1) {
         throw new Error('unable to retrieve tomorrow\'s forecast');
@@ -47,7 +47,7 @@ const handlers = {
   },
   'NextGoodBikingWeather': async function() {
     try {
-      const forecasts = await weatherDao.getForecast('MA', 'Woburn');
+      const forecasts = await weatherDao.getForecasts('MA', 'Woburn');
       const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
       if (nextGoodCommuteForecasts) {
         debugger;
