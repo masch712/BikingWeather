@@ -14,16 +14,18 @@ describe('getCommuteForecasts', () => {
       const forecastDateTime = baseDateTime.plus({hours: hr});
       let msSinceEpoch = forecastDateTime.valueOf();
       let forecast = new WeatherForecast(msSinceEpoch, 1, 1, 'rekt', 0);
+      if (hr > 23) {
+        debugger;
+      }
       if (forecastDateTime.hour >= commuteStart
                 && forecastDateTime.hour <= commuteEnd
-                && forecastDateTime.weekday != 0
                 && forecastDateTime.weekday != 6
+                && forecastDateTime.weekday != 7
       ) {
         expectedCommuteForecasts.push(forecast);
       }
       forecasts.push(forecast);
     }
-
     const actualCommuteForecasts = WeatherForecastUtils.getCommuteForecasts(forecasts, commuteStart, commuteEnd);
     expect(actualCommuteForecasts).toEqual(expectedCommuteForecasts);
   });
