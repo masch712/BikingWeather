@@ -1,10 +1,9 @@
-const WeatherDao = require('../WeatherDao');
 const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
 const {DateTime} = require('luxon');
-const originalWeatherDao = _.clone(WeatherDao);
+const WeatherDao = require('../WeatherDao');
 jest.mock('../WeatherDao');
 let bikingWeatherLambda;
 

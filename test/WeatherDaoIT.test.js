@@ -1,11 +1,13 @@
 const WeatherDao = require('../WeatherDao.js');
 const _ = require('lodash');
+const config = require('../lib/config');
 
 describe('WeatherDao', function() {
   const weatherDao = new WeatherDao;
   describe('#getForecast(MA, Woburn)', function() {
     it('should return a forecast', function() {
-      expect(process.env.APIKEY).toBeDefined();
+      debugger;
+      expect(config.get('wunderground.apiKey')).toBeDefined();
       const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');
       return forecastPromise.then(function(forecasts) {
         expect(forecasts.length).toBe(240);
@@ -35,7 +37,7 @@ describe('WeatherDao', function() {
         const putResult = await weatherDao.putForecastsToDb(forecasts);
         const dbForecasts = await weatherDao.getForecasts('MA', 'Woburn');
         debugger;
-        // expect(dbForecasts).toEqual(forecasts);
+        expect(dbForecasts).toEqual(forecasts);
       });
     });
   });

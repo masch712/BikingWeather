@@ -48,6 +48,7 @@ const handlers = {
   'NextGoodBikingWeather': async function() {
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn');
+      debugger;
       const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
       if (nextGoodCommuteForecasts) {
         debugger;

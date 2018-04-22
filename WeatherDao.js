@@ -9,10 +9,10 @@ const BATCH_GET_SIZE = 100;
 const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
 const Promise = require('bluebird');
-
+const config = require('./lib/config.js');
 AWS.config.update({
   region: 'us-east-1',
-  endpoint: 'http://localhost:8000',
+  endpoint: config.get('aws.dynamodb.endpoint'),
 });
 
 const dynamodb = new AWS.DynamoDB();
@@ -38,7 +38,7 @@ const params = {
 class WeatherDao {
   constructor() {
     // TODO: use convict for config
-    this.apiKey = process.env.APIKEY;
+    this.apiKey = config.get('wunderground.apiKey');
   }
 
   /**
@@ -50,7 +50,7 @@ class WeatherDao {
   async getForecastFromService(state, city) {
     return superagent.get('http://api.wunderground.com/api/'
       + this.apiKey + '/hourly10day/q/' + state + '/' + city + '.json')
-      .then(handleError)
+      .then(handleWundergroundError)
       .then((res) => res.body.hourly_forecast)
       .then((wunderForecasts) => {
         const forecasts = _.map(wunderForecasts, (wunderForecast) => {
@@ -70,11 +70,14 @@ class WeatherDao {
 
   async getForecasts(state, city) {
     const baseDateTime = DateTime.local().setZone('America/New_York')
+      .plus({hours: 1})
       .set({minute: 0, second: 0, millisecond: 0});
     const baseMillis = baseDateTime.valueOf();
     const allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * 10),
       MILLIS_PER_HOUR);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
+
+    console.log('db get: first: ' + allMillis[0] + '; last: ' + _.last(allMillis));
 
     return Promise.map(milliChunks, (milliChunk) => {
       const req = {
@@ -89,7 +92,6 @@ class WeatherDao {
     }).then((dataChunks) => {
       let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
       flattened = _.sortBy(flattened, 'msSinceEpoch');
-      debugger;
       return _.map(flattened, (dbRecord) => {
         const f = dbRecord.forecast;
         return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
@@ -154,9 +156,10 @@ class WeatherDao {
   }
 }
 
-function handleError(res) {
+function handleWundergroundError(res) {
   if (res.body.response.error != null) {
-    throw new Error(JSON.stringify(res.body.response.error));
+    debugger;
+    throw new Error('Wunderground API responded with error: ' + JSON.stringify(res.body.response.error));
   }
   return res;
 }
