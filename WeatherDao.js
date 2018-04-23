@@ -3,6 +3,7 @@ const _ = require('lodash');
 const WeatherForecast = require('./models/WeatherForecast.js');
 const TABLENAME = 'Forecasts';
 const AWS = require('aws-sdk');
+const AwsUtils = require('./lib/AwsUtils');
 const MILLIS_PER_HOUR = 1000 * 60 * 60;
 const MILLIS_PER_DAY = MILLIS_PER_HOUR * 24;
 const BATCH_GET_SIZE = 100;
@@ -13,6 +14,7 @@ const config = require('./lib/config.js');
 AWS.config.update({
   region: 'us-east-1',
   endpoint: config.get('aws.dynamodb.endpoint'),
+  credentials: AwsUtils.creds,
 });
 
 const dynamodb = new AWS.DynamoDB();
