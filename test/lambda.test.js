@@ -6,6 +6,7 @@ const {DateTime} = require('luxon');
 const WeatherDao = require('../WeatherDao');
 jest.mock('../WeatherDao');
 let bikingWeatherLambda;
+const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
 const mock_getForecast = jest.fn();
 let originalWeatherForecastUtils = _.clone(WeatherForecastUtils);
@@ -86,7 +87,7 @@ describe('NextGoodBikingWeather Intent', () => {
   it('says how many days til good weather', async () => {
     const expectedGoodCommuteForcasts = [];
     const allForecasts = [];
-    const baseDateTime = DateTime.local().setZone('America/New_York').set({hour: 0, minute: 0, second: 0, millisecond: 0});
+    const baseDateTime = DateTime.local().setZone('America/New_York').set(MIDNIGHT);
 
     for (let hr = 0; hr < 24 * 10; hr ++) {
       const forecastDateTime = baseDateTime.plus({hours: hr});
@@ -102,7 +103,7 @@ describe('NextGoodBikingWeather Intent', () => {
       expectedGoodCommuteForcasts.push(forecast);
     });
 
-    const niceDay = goodweatherForecasts[0].dateTime.diff(baseDateTime, 'day').days;
+    const niceDay = goodweatherForecasts[0].dateTime.set(MIDNIGHT).diff(baseDateTime, 'day').days;
 
     mock_getForecast.mockImplementationOnce((state, city) => {
       return Promise.resolve(allForecasts);

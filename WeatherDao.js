@@ -91,12 +91,14 @@ class WeatherDao {
       return docClient.batchGetAsync(req);
     }).then((dataChunks) => {
       let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
-      flattened = _.sortBy(flattened, 'msSinceEpoch');
-      return _.map(flattened, (dbRecord) => {
+      const forecasts = _.map(flattened, (dbRecord) => {
         const f = dbRecord.forecast;
         return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
           f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
       });
+      debugger;
+      const sortedForecasts = _.sortBy(forecasts, 'msSinceEpoch');
+      return sortedForecasts;
     });
   }
 
@@ -158,7 +160,6 @@ class WeatherDao {
 
 function handleWundergroundError(res) {
   if (res.body.response.error != null) {
-    debugger;
     throw new Error('Wunderground API responded with error: ' + JSON.stringify(res.body.response.error));
   }
   return res;

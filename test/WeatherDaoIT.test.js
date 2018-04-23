@@ -6,7 +6,6 @@ describe('WeatherDao', function() {
   const weatherDao = new WeatherDao;
   describe('#getForecast(MA, Woburn)', function() {
     it('should return a forecast', function() {
-      debugger;
       expect(config.get('wunderground.apiKey')).toBeDefined();
       const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');
       return forecastPromise.then(function(forecasts) {
@@ -26,7 +25,6 @@ describe('WeatherDao', function() {
       try {
         await weatherDao.createTable();
       } catch (err) {
-        debugger;
         throw err;
       }
     });
@@ -37,6 +35,9 @@ describe('WeatherDao', function() {
         const putResult = await weatherDao.putForecastsToDb(forecasts);
         const dbForecasts = await weatherDao.getForecasts('MA', 'Woburn');
         debugger;
+        expect(dbForecasts.length).toEqual(forecasts.length);
+        expect(dbForecasts[0].dateTime.toISO()).toEqual(forecasts[0].dateTime.toISO());
+        expect(dbForecasts[0].dateTime.diff(forecasts[0].dateTime, 'hours').hours).toEqual(0);
         expect(dbForecasts).toEqual(forecasts);
       });
     });

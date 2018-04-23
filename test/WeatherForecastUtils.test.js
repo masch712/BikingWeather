@@ -14,9 +14,6 @@ describe('getCommuteForecasts', () => {
       const forecastDateTime = baseDateTime.plus({hours: hr});
       let msSinceEpoch = forecastDateTime.valueOf();
       let forecast = new WeatherForecast(msSinceEpoch, 1, 1, 'rekt', 0);
-      if (hr > 23) {
-        debugger;
-      }
       if (forecastDateTime.hour >= commuteStart
                 && forecastDateTime.hour <= commuteEnd
                 && forecastDateTime.weekday != 6

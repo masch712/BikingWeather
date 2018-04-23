@@ -10,9 +10,7 @@ const _ = require('lodash');
 const logger = require('./lib/Logger');
 const {DateTime} = require('luxon');
 
-// =========================================================================================================================================
-// TODO: The items below this comment need your attention.
-// =========================================================================================================================================
+const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
 // Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
 // Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
@@ -48,17 +46,21 @@ const handlers = {
   'NextGoodBikingWeather': async function() {
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn');
-      debugger;
-      const nextGoodCommuteForecasts = WeatherForecastUtils.getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
+      const nextGoodCommuteForecasts = WeatherForecastUtils
+        .getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
+
       if (nextGoodCommuteForecasts) {
-        debugger;
-        const durationTilGood = Math.ceil(nextGoodCommuteForecasts[0].dateTime.diffNow('days').days);
+        const goodForecastDate = nextGoodCommuteForecasts[0].dateTime;
+        logger.debug('goodForecastDate: ' + goodForecastDate.toISO());
+        const thisMorning = DateTime.local().setZone(goodForecastDate.zone).set(MIDNIGHT);
+        const durationTilGood = Math.floor(goodForecastDate.diff(thisMorning, 'days').days);
         const daysTilGoodString = `in ${durationTilGood} days`;
         this.response.speak(daysTilGoodString);
       } else {
         this.response.speak('you\'re doomed, the weather is bad for 10 days.');
       }
     } catch (err) {
+      //TODO: don't speak errors in prod
       this.response.speak(err + '');
     }
     this.emit(':responseReady');
