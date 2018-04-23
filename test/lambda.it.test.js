@@ -1,18 +1,22 @@
 const utils = require('./utils');
 const WeatherDao = require('../WeatherDao');
-jest.mock('../WeatherDao');
-let bikingWeatherLambda;
-const originalWeatherDao = new WeatherDao();
+const weatherDao = new WeatherDao();
+const bikingWeatherLambda = require('../lambda');
 
-const mock_getForecast = jest.fn();
-beforeAll(() => {
-  // Steal the reference to WeatherDao.getForecast() so we can change iT at will
-  WeatherDao.mockImplementationOnce(() => {
-    return {
-      getForecasts: mock_getForecast,
-    };
-  });
-  bikingWeatherLambda = require('../lambda');
+beforeAll(async () => {
+  try {
+    await weatherDao.dropTable();
+  } catch (err) {
+    console.error(err);
+  }
+  try {
+    await weatherDao.createTable();
+    const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
+    const putResult = await weatherDao.putForecastsToDb(forecasts);
+  } catch (err) {
+    debugger;
+    throw err;
+  }
 });
 
 describe('NextGoodBikingWeather', () => {
