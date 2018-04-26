@@ -14,7 +14,8 @@ const config = require('./lib/config.js');
 AWS.config.update({
   region: 'us-east-1',
   endpoint: config.get('aws.dynamodb.endpoint'),
-  credentials: AwsUtils.creds,
+  //TODO: do i need creds?
+  // credentials: AwsUtils.creds,
 });
 
 const dynamodb = new AWS.DynamoDB();
@@ -41,6 +42,21 @@ class WeatherDao {
   constructor() {
     // TODO: use convict for config
     this.apiKey = config.get('wunderground.apiKey');
+  }
+
+  tableExists() {
+    return dynamodb.describeTable(
+      {
+        TableName: TABLENAME,
+      }
+    ).promise()
+      .catch((err) => {
+        // TODO: parse the error?
+        return false;
+      })
+      .then((data) => {
+        return data.Table != null;
+      });
   }
 
   /**
