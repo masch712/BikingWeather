@@ -26,6 +26,8 @@ const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.
 
 const handlers = {
   'BikingWeatherTomorrow': async function() {
+    console.log('!!!!!WTF!!!!!');
+    logger.error('wtf');
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn');
       const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);

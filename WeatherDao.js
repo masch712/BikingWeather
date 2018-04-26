@@ -11,10 +11,12 @@ const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
 const Promise = require('bluebird');
 const config = require('./lib/config.js');
+const logger = require('./lib/Logger');
+
 AWS.config.update({
   region: 'us-east-1',
   endpoint: config.get('aws.dynamodb.endpoint'),
-  //TODO: do i need creds?
+  // TODO: do i need creds?
   // credentials: AwsUtils.creds,
 });
 
@@ -95,7 +97,7 @@ class WeatherDao {
       MILLIS_PER_HOUR);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
-    console.log('db get: first: ' + allMillis[0] + '; last: ' + _.last(allMillis));
+    logger.debug('db get: first: ' + allMillis[0] + '; last: ' + _.last(allMillis));
 
     return Promise.map(milliChunks, (milliChunk) => {
       const req = {
@@ -106,7 +108,11 @@ class WeatherDao {
           },
         },
       };
-      return docClient.batchGetAsync(req);
+      return docClient.batchGetAsync(req)
+        .then((dataChunk) => {
+          logger.debug('db got chunk of size: ' + dataChunk.Responses.Forecasts.length);
+          return dataChunk;
+        });
     }).then((dataChunks) => {
       let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
       const forecasts = _.map(flattened, (dbRecord) => {
