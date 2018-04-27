@@ -88,13 +88,25 @@ class WeatherDao {
       });
   }
 
-  async getForecasts(state, city) {
+  async getForecasts(state, city, hourStart, hourEnd) {
+    const numDays = 10;
     const baseDateTime = DateTime.local().setZone('America/New_York')
       .plus({hours: 1})
       .set({minute: 0, second: 0, millisecond: 0});
     const baseMillis = baseDateTime.valueOf();
-    const allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * 10),
-      MILLIS_PER_HOUR);
+    let allMillis = [];
+    if (_.isNumber(hourStart) && _.isNumber(hourEnd)) {
+      const startMillis = baseMillis + (hourStart * MILLIS_PER_HOUR);
+      const endMillis = baseMillis + (hourEnd * MILLIS_PER_HOUR);
+      for (let iDay = 0; iDay < numDays; iDay++) {
+        // TODO: use Luxon in case daylight savings type shit?
+        const millisOffset = (iDay * MILLIS_PER_DAY);
+        allMillis.push(startMillis + millisOffset, endMillis + millisOffset);
+      }
+    } else {
+      allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * numDays),
+        MILLIS_PER_HOUR);
+    }
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
     logger.debug({
