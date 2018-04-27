@@ -26,11 +26,11 @@ const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.
 
 const handlers = {
   'BikingWeatherTomorrow': async function() {
-    console.log('!!!!!WTF!!!!!');
-    logger.error('wtf');
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn');
+      
       const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
+      logger.debug({msg: 'tomorrows commute forecasts', data: tomorrowsCommuteForecasts});
       if (tomorrowsCommuteForecasts.length < 1) {
         throw new Error('unable to retrieve tomorrow\'s forecast');
       }
@@ -51,6 +51,7 @@ const handlers = {
       const nextGoodCommuteForecasts = WeatherForecastUtils
         .getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
 
+      logger.debug({msg: 'next good commute forecasts', data: nextGoodCommuteForecasts});
       if (nextGoodCommuteForecasts) {
         const goodForecastDate = nextGoodCommuteForecasts[0].dateTime;
         logger.debug('goodForecastDate: ' + goodForecastDate.toISO());
@@ -85,6 +86,7 @@ exports.handler = function(event, context, callback) {
   const alexa = Alexa.handler(event, context, callback);
   alexa.APP_ID = APP_ID;
   alexa.registerHandlers(handlers);
+  logger.debug('calling execute');
   alexa.execute();
 };
 

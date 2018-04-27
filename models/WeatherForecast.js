@@ -1,6 +1,7 @@
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const {DateTime} = require('luxon');
 const _ = require('lodash');
+const logger = require('../lib/Logger');
 
 class WeatherForecast {
   /**
@@ -15,6 +16,7 @@ class WeatherForecast {
      */
   constructor(msSinceEpoch, fahrenheit, windchillFahrenheit,
     condition, precipitationProbability, city, state) {
+    const startTime = DateTime.local().valueOf();
     this.msSinceEpoch = parseInt(msSinceEpoch);
     this.fahrenheit = parseInt(fahrenheit);
     this.windchillFahrenheit = parseInt(windchillFahrenheit);
@@ -25,6 +27,8 @@ class WeatherForecast {
     this.dateTime = DateTime.fromMillis(this.msSinceEpoch, {zone: 'America/New_York'});
     this.city = city;
     this.state = state;
+    const endTime = DateTime.local().valueOf() - startTime;
+    logger.debug('forecast ' + msSinceEpoch + ': time to instantiate: ' + endTime);
   }
 
   toDbObj() {

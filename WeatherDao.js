@@ -97,7 +97,14 @@ class WeatherDao {
       MILLIS_PER_HOUR);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
-    logger.debug('db get: first: ' + allMillis[0] + '; last: ' + _.last(allMillis));
+    logger.debug({
+      msg: 'db get',
+      data: {
+        first: allMillis[0],
+        last: _.last(allMillis),
+        baseDateTime: baseDateTime.toISO(),
+      },
+    });
 
     return Promise.map(milliChunks, (milliChunk) => {
       const req = {
@@ -114,14 +121,17 @@ class WeatherDao {
           return dataChunk;
         });
     }).then((dataChunks) => {
+      logger.debug('db got all ' + dataChunks.length + ' chunks');
       let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
+      logger.debug('flattened chunks');
       const forecasts = _.map(flattened, (dbRecord) => {
         const f = dbRecord.forecast;
         return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
           f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
       });
-      debugger;
+      logger.debug('mapped forecasts');
       const sortedForecasts = _.sortBy(forecasts, 'msSinceEpoch');
+      logger.debug('sorted forecasts');
       return sortedForecasts;
     });
   }
@@ -184,7 +194,10 @@ class WeatherDao {
 
 function handleWundergroundError(res) {
   if (res.body.response.error != null) {
-    throw new Error('Wunderground API responded with error: ' + JSON.stringify(res.body.response.error));
+    const error = new Error('Wunderground API responded with error: '
+      + JSON.stringify(res.body.response.error));
+    logger.error(error);
+    throw error;
   }
   return res;
 }
