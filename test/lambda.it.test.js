@@ -1,5 +1,5 @@
 const utils = require('./utils');
-const WeatherDao = require('../WeatherDao');
+const WeatherDao = require('../lib/WeatherDao');
 const weatherDao = new WeatherDao();
 const bikingWeatherLambda = require('../lambda');
 

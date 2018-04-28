@@ -3,7 +3,7 @@
 
 'use strict';
 const Alexa = require('alexa-sdk');
-const WeatherDaoLib = require('./WeatherDao');
+const WeatherDaoLib = require('./lib/WeatherDao');
 const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 const _ = require('lodash');

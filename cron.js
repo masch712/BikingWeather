@@ -1,4 +1,4 @@
-const WeatherDao = require('./WeatherDao');
+const WeatherDao = require('./lib/WeatherDao');
 
 const weatherDao = new WeatherDao();
 

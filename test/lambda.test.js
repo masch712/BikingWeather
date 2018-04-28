@@ -3,8 +3,8 @@ const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
 const {DateTime} = require('luxon');
-const WeatherDao = require('../WeatherDao');
-jest.mock('../WeatherDao');
+const WeatherDao = require('../lib/WeatherDao');
+jest.mock('../lib/WeatherDao');
 let bikingWeatherLambda;
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
