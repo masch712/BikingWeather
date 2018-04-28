@@ -88,35 +88,35 @@ class WeatherDao {
       });
   }
 
-  async getForecasts(state, city, hourStart, hourEnd) {
-    const numDays = 10;
+  _forecastMillisToGet(hourStart, hourEnd, numDays) {
     const baseDateTime = DateTime.local().setZone('America/New_York')
-      .plus({hours: 1})
-      .set({minute: 0, second: 0, millisecond: 0});
+      .set({hour: 0, minute: 0, second: 0, millisecond: 0});
     const baseMillis = baseDateTime.valueOf();
     let allMillis = [];
     if (_.isNumber(hourStart) && _.isNumber(hourEnd)) {
-      const startMillis = baseMillis + (hourStart * MILLIS_PER_HOUR);
-      const endMillis = baseMillis + (hourEnd * MILLIS_PER_HOUR);
+      let startMillis = baseMillis + (hourStart * MILLIS_PER_HOUR);
+      let endMillis = baseMillis + (hourEnd * MILLIS_PER_HOUR);
       for (let iDay = 0; iDay < numDays; iDay++) {
-        // TODO: use Luxon in case daylight savings type shit?
+      // TODO: use Luxon in case daylight savings type shit?
         const millisOffset = (iDay * MILLIS_PER_DAY);
-        allMillis.push(startMillis + millisOffset, endMillis + millisOffset);
+        startMillis += millisOffset;
+        endMillis += millisOffset;
+        allMillis.push(startMillis, endMillis);
       }
     } else {
       allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * numDays),
         MILLIS_PER_HOUR);
     }
+    return allMillis;
+  }
+
+  async getForecasts(state, city, hourStart, hourEnd) {
+    const numDays = 10;
+
+    const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
-    logger.debug({
-      msg: 'db get',
-      data: {
-        first: allMillis[0],
-        last: _.last(allMillis),
-        baseDateTime: baseDateTime.toISO(),
-      },
-    });
+    logger.debug('db get allMillis: ' + allMillis.join(','));
 
     return Promise.map(milliChunks, (milliChunk) => {
       const req = {
