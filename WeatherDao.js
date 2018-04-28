@@ -98,7 +98,7 @@ class WeatherDao {
       let endMillis = baseMillis + (hourEnd * MILLIS_PER_HOUR);
       for (let iDay = 0; iDay < numDays; iDay++) {
       // TODO: use Luxon in case daylight savings type shit?
-        const millisOffset = (iDay * MILLIS_PER_DAY);
+        const millisOffset = MILLIS_PER_DAY;
         startMillis += millisOffset;
         endMillis += millisOffset;
         allMillis.push(startMillis, endMillis);
@@ -116,6 +116,7 @@ class WeatherDao {
     const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
+    debugger;
     logger.debug('db get allMillis: ' + allMillis.join(','));
 
     return Promise.map(milliChunks, (milliChunk) => {
