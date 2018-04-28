@@ -1,29 +1,39 @@
-const moment = require('moment-timezone');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-const { DateTime } = require('luxon');
+const {DateTime} = require('luxon');
+const _ = require('lodash');
+const logger = require('../lib/Logger');
+
 class WeatherForecast {
-    /**
-     * 
-     * @param {number} msSinceEpoch 
-     * @param {number} fahrenheit 
-     * @param {number} windchillFahrenheit 
-     * @param {Text} condition 
+  /**
+     *
+     * @param {number} msSinceEpoch
+     * @param {number} fahrenheit
+     * @param {number} windchillFahrenheit
+     * @param {Text} condition
      * @param {number} precipitationProbability
+     * @param {Text} city
+     * @param {Text} state
      */
-    constructor(msSinceEpoch, fahrenheit, windchillFahrenheit, condition, precipitationProbability) {
-        this.msSinceEpoch = parseInt(msSinceEpoch);
-        this.dateISO = moment(msSinceEpoch).toISOString();
-        this.date = moment(msSinceEpoch).toDate();
-        this.day = moment(msSinceEpoch).day();
-        this.fahrenheit = parseInt(fahrenheit);
-        this.windchillFahrenheit = parseInt(windchillFahrenheit);
-        this.condition = condition;
-        this.precipitationProbability = parseInt(precipitationProbability);
-        this.isSweetSpot = WeatherForecastUtils.isInSweetSpot(this);
-        //TODO: get smart about timezones for different locations
-        // this.moment_ = WeatherForecastUtils.epochMillisToTz(this.msSinceEpoch, 'America/New_York');
-        this.dateTime = DateTime.fromMillis(this.msSinceEpoch, {zone: 'America/New_York'});
-    }
+  constructor(msSinceEpoch, fahrenheit, windchillFahrenheit,
+    condition, precipitationProbability, city, state) {
+    const startTime = DateTime.local().valueOf();
+    this.msSinceEpoch = parseInt(msSinceEpoch);
+    this.fahrenheit = parseInt(fahrenheit);
+    this.windchillFahrenheit = parseInt(windchillFahrenheit);
+    this.condition = condition;
+    this.precipitationProbability = parseInt(precipitationProbability);
+    this.isSweetSpot = WeatherForecastUtils.isInSweetSpot(this);
+    // TODO: get smart about timezones for different locations
+    this.dateTime = DateTime.fromMillis(this.msSinceEpoch, {zone: 'America/New_York'});
+    this.city = city;
+    this.state = state;
+    const endTime = DateTime.local().valueOf() - startTime;
+    logger.debug('forecast ' + msSinceEpoch + ': time to instantiate: ' + endTime);
+  }
+
+  toDbObj() {
+    return _.omit(this, 'dateTime');
+  }
 }
 
 module.exports = WeatherForecast;

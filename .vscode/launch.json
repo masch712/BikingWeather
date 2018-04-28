@@ -22,26 +22,8 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "env": {
-                "APIKEY": "d6fd8bf1d739f77d"
+                "NODE_ENV": "development"
             },
         },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Mocha Tests",
-            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "env": {
-                "APIKEY": "d6fd8bf1d739f77d"
-            },
-            "args": [
-                "-u",
-                "tdd",
-                "--timeout",
-                "999999",
-                "--colors",
-                "${workspaceFolder}/test"
-            ],
-            "internalConsoleOptions": "openOnSessionStart"
-        }
     ]
 }

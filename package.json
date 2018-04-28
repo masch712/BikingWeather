@@ -4,18 +4,24 @@
   "description": "",
   "dependencies": {
     "alexa-sdk": "1.0.25",
+    "aws-sdk": "^2.226.1",
+    "bluebird": "^3.5.1",
+    "convict": "^4.2.0",
+    "js-yaml": "^3.11.0",
     "lodash": "^4.17.5",
     "luxon": "^1.0.0",
-    "moment-timezone": "^0.5.14",
     "superagent": "^3.8.2",
-    "winston": "^3.0.0-rc4"
+    "winston": "^3.0.0-rc4",
+    "winston-transport": "^3.2.1"
   },
   "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-google": "^0.9.1",
     "jest": "22.4.3"
   },
   "scripts": {
     "test": "jest",
-    "build": "7z a build\\Release\\build.zip .\\node_modules .\\lib .\\models .\\*.js",
+    "build": "7z a build\\Release\\build.zip .\\node_modules .\\lib .\\models .\\config .\\*.js",
     "deploy": "aws s3 cp .\\build\\Release\\build.zip s3://biking-weather-builds"
   },
   "jest": {
