@@ -12,23 +12,23 @@ const {DateTime} = require('luxon');
 
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
-// Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
-// Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
+// Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on
+// http://developer.amazon.com.  Make sure to enclose your value in quotes, like this:
+// const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
 const APP_ID = undefined;
 
-const SKILL_NAME = 'Biking Weather';
 const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.';
 
 
-// =========================================================================================================================================
+// ====================================================================================================================
 // Editing anything below this line might break your skill.
-// =========================================================================================================================================
+// ====================================================================================================================
 
 const handlers = {
   'BikingWeatherTomorrow': async function() {
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
-      
+
       const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
       logger.debug({msg: 'tomorrows commute forecasts', data: tomorrowsCommuteForecasts});
       if (tomorrowsCommuteForecasts.length < 1) {
@@ -63,7 +63,7 @@ const handlers = {
         this.response.speak('you\'re doomed, the weather is bad for 10 days.');
       }
     } catch (err) {
-      //TODO: don't speak errors in prod
+      // TODO: don't speak errors in prod
       this.response.speak(err + '');
     }
     this.emit(':responseReady');

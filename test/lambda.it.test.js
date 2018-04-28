@@ -12,7 +12,7 @@ beforeAll(async () => {
   try {
     await weatherDao.createTable();
     const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-    const putResult = await weatherDao.putForecastsToDb(forecasts);
+    await weatherDao.putForecastsToDb(forecasts);
   } catch (err) {
     debugger;
     throw err;
