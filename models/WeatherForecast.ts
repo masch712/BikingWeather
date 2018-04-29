@@ -1,9 +1,20 @@
-const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-const {DateTime} = require('luxon');
-const _ = require('lodash');
-const logger = require('../lib/Logger');
+import { DateTime } from "luxon";
+
+import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
+import * as _ from 'lodash';
+import * as logger from '../lib/Logger';
 
 class WeatherForecast {
+  msSinceEpoch: number;
+  fahrenheit: number;
+  windchillFahrenheit: number;
+  condition: string;
+  precipitationProbability: number;
+  isSweetSpot: boolean;
+  dateTime: DateTime;
+  city: string;
+  state: string;
+
   /**
      *
      * @param {number} msSinceEpoch

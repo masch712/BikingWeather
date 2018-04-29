@@ -1,6 +1,6 @@
-const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-const WeatherForecast = require('../models/WeatherForecast');
-const {DateTime} = require('luxon');
+import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
+import * as WeatherForecast from '../models/WeatherForecast';
+import { DateTime } from "luxon";
 
 describe('getCommuteForecasts', () => {
   it('filters commute times', () => {
