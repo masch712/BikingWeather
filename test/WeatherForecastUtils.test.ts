@@ -1,5 +1,5 @@
 import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
-import * as WeatherForecast from '../models/WeatherForecast';
+import {WeatherForecast} from '../models/WeatherForecast';
 import { DateTime } from "luxon";
 
 describe('getCommuteForecasts', () => {

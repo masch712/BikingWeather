@@ -1,7 +1,8 @@
-import { WeatherDao } from "../lib/WeatherDao";
+jest.setTimeout(10000);
+import { instance } from "../lib/WeatherDao";
 const config = require('../lib/config');
 describe('WeatherDao', function() {
-  const weatherDao = new WeatherDao();
+  const weatherDao = instance;
 
   describe('#tableExists', () => {
     it('returns false when not exists', async () => {

@@ -1,6 +1,6 @@
 import * as utils from "./utils";
-import { WeatherDao } from '../lib/WeatherDao';
-const weatherDao = new WeatherDao();
+import { instance } from '../lib/WeatherDao';
+const weatherDao = instance;
 const bikingWeatherLambda = require('../lambda');
 jest.setTimeout(10000);
 

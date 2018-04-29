@@ -52,7 +52,7 @@ export class WeatherDao {
     return WeatherDao._instance;
   }
 
-  public tableExists():boolean {
+  public tableExists():Promise<Boolean> {
     return dynamodb.describeTable(
       {
         TableName: TABLENAME,
@@ -209,7 +209,7 @@ export class WeatherDao {
         (prev, current) => _.merge(prev, current));
 
       if (_.keys(unprocessedItems).length > 0) {
-        throw new Error('Failed to put data: ' + unprocessedItems);
+        throw new Error('Failed to put data: ' + JSON.stringify(unprocessedItems));
       }
     });
   }

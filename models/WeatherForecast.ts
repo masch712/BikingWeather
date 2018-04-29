@@ -26,7 +26,7 @@ export class WeatherForecast {
      * @param {Text} state
      */
   constructor(msSinceEpoch, fahrenheit, windchillFahrenheit,
-    condition, precipitationProbability, city, state) {
+    condition, precipitationProbability?, city?, state?) {
     const startTime = DateTime.local().valueOf();
     this.msSinceEpoch = parseInt(msSinceEpoch);
     this.fahrenheit = parseInt(fahrenheit);

@@ -1,8 +1,9 @@
-const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
 const {DateTime} = require('luxon');
+
+import { WeatherForecast } from "../models/WeatherForecast";
 
 import { WeatherDao } from "../lib/WeatherDao";
 const mock_getForecast = jest.fn();
