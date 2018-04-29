@@ -35,7 +35,7 @@ const params = {
   },
 };
 
-class WeatherDao {
+export class WeatherDao {
   apiKey: string;
 
   constructor() {
@@ -107,7 +107,7 @@ class WeatherDao {
     return allMillis;
   }
 
-  async getForecasts(state, city, hourStart, hourEnd) {
+  async getForecasts(state, city, hourStart?, hourEnd?) {
     const numDays = 10;
 
     const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
@@ -215,5 +215,3 @@ function handleWundergroundError(res) {
   }
   return res;
 }
-
-module.exports = WeatherDao;

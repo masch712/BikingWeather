@@ -3,8 +3,9 @@
 
 'use strict';
 const Alexa = require('alexa-sdk');
-const WeatherDaoLib = require('./lib/WeatherDao');
-const weatherDao = new WeatherDaoLib();
+import { WeatherDao } from './lib/WeatherDao';
+const weatherDao = new WeatherDao();
+
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 import * as _  from 'lodash';
 import * as logger from './lib/Logger';

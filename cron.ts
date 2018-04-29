@@ -1,5 +1,4 @@
-const WeatherDao = require('./lib/WeatherDao');
-
+import {WeatherDao} from "./lib/WeatherDao";
 const weatherDao = new WeatherDao();
 
 exports.putForecasts = async () => {

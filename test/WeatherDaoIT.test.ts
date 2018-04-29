@@ -1,6 +1,5 @@
-const WeatherDao = require('../lib/WeatherDao');
+import { WeatherDao } from "../lib/WeatherDao";
 const config = require('../lib/config');
-
 describe('WeatherDao', function() {
   const weatherDao = new WeatherDao();
 

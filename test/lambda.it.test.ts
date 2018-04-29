@@ -1,7 +1,8 @@
-const utils = require('./utils');
-const WeatherDao = require('../lib/WeatherDao');
+import * as utils from "./utils";
+import { WeatherDao } from '../lib/WeatherDao';
 const weatherDao = new WeatherDao();
 const bikingWeatherLambda = require('../lambda');
+jest.setTimeout(10000);
 
 beforeAll(async () => {
   try {
