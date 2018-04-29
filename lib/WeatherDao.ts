@@ -1,6 +1,6 @@
 const superagent = require('superagent');
 const _ = require('lodash');
-const WeatherForecast = require('../models/WeatherForecast');
+import { WeatherForecast } from "../models/WeatherForecast";
 const TABLENAME = 'Forecasts';
 const AWS = require('aws-sdk');
 const MILLIS_PER_HOUR = 1000 * 60 * 60;
@@ -36,14 +36,23 @@ const params = {
 };
 
 export class WeatherDao {
+
+  private static _instance: WeatherDao = new WeatherDao();
   apiKey: string;
 
   constructor() {
+    if (WeatherDao._instance) {
+      throw new Error('Singleton already instantiated');
+    }
     // TODO: use convict for config
     this.apiKey = config.get('wunderground.apiKey');
   }
 
-  tableExists() {
+  public static getInstance(): WeatherDao {
+    return WeatherDao._instance;
+  }
+
+  public tableExists():boolean {
     return dynamodb.describeTable(
       {
         TableName: TABLENAME,
@@ -64,7 +73,7 @@ export class WeatherDao {
      * @param {String} city
      * @return {Promise} Promise for WeatherForecast[] forecast for 10 days
      */
-  async getForecastFromService(state, city) {
+  public async getForecastFromService(state, city): Promise<Array<WeatherForecast>> {
     return superagent.get('http://api.wunderground.com/api/'
       + this.apiKey + '/hourly10day/q/' + state + '/' + city + '.json')
       .then(handleWundergroundError)
@@ -85,7 +94,7 @@ export class WeatherDao {
       });
   }
 
-  _forecastMillisToGet(hourStart, hourEnd, numDays) {
+  private _forecastMillisToGet(hourStart, hourEnd, numDays): Array<Number> {
     const baseDateTime = DateTime.local().setZone('America/New_York')
       .set({hour: 0, minute: 0, second: 0, millisecond: 0});
     const baseMillis = baseDateTime.valueOf();
@@ -205,6 +214,8 @@ export class WeatherDao {
     });
   }
 }
+
+export const  instance = WeatherDao.getInstance();
 
 function handleWundergroundError(res) {
   if (res.body.response.error != null) {

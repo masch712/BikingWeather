@@ -4,14 +4,16 @@ const utils = require('./utils');
 const _ = require('lodash');
 const {DateTime} = require('luxon');
 
+import { WeatherDao } from "../lib/WeatherDao";
 const mock_getForecast = jest.fn();
 jest.mock('../lib/WeatherDao', () => {
-  return () => {
-    return {getForecasts: mock_getForecast};
-  };
+//  return jest.fn<WeatherDao>().mockImplementation(() => {
+      return {
+        instance: {getForecasts: mock_getForecast}
+      };
+  // });
 });
 
-import { WeatherDao } from "../lib/WeatherDao";
 let bikingWeatherLambda;
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 

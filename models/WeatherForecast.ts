@@ -4,7 +4,7 @@ import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
 import * as _ from 'lodash';
 import * as logger from '../lib/Logger';
 
-class WeatherForecast {
+export class WeatherForecast {
   msSinceEpoch: number;
   fahrenheit: number;
   windchillFahrenheit: number;
@@ -46,5 +46,3 @@ class WeatherForecast {
     return _.omit(this, 'dateTime');
   }
 }
-
-module.exports = WeatherForecast;
