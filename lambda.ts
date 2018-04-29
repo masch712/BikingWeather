@@ -6,9 +6,9 @@ const Alexa = require('alexa-sdk');
 const WeatherDaoLib = require('./lib/WeatherDao');
 const weatherDao = new WeatherDaoLib();
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
-const _ = require('lodash');
-const logger = require('./lib/Logger');
-const {DateTime} = require('luxon');
+import * as _  from 'lodash';
+import * as logger from './lib/Logger';
+import {DateTime} from 'luxon';
 
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 

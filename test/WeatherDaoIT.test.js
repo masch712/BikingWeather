@@ -1,4 +1,4 @@
-const WeatherDao = require('../lib/WeatherDao.js');
+const WeatherDao = require('../lib/WeatherDao');
 const config = require('../lib/config');
 
 describe('WeatherDao', function() {

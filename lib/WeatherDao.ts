@@ -8,20 +8,16 @@ const MILLIS_PER_DAY = MILLIS_PER_HOUR * 24;
 const BATCH_GET_SIZE = 100;
 const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
-const Promise = require('bluebird');
 const config = require('../lib/config.js');
 const logger = require('../lib/Logger');
 
 AWS.config.update({
   region: 'us-east-1',
   endpoint: config.get('aws.dynamodb.endpoint'),
-  // TODO: do i need creds?
-  // credentials: AwsUtils.creds,
 });
 
 const dynamodb = new AWS.DynamoDB();
 const docClient = new AWS.DynamoDB.DocumentClient();
-Promise.promisifyAll(docClient);
 
 const params = {
   TableName: TABLENAME,
@@ -40,6 +36,8 @@ const params = {
 };
 
 class WeatherDao {
+  apiKey: string;
+
   constructor() {
     // TODO: use convict for config
     this.apiKey = config.get('wunderground.apiKey');
@@ -117,8 +115,7 @@ class WeatherDao {
 
     debugger;
     logger.debug('db get allMillis: ' + allMillis.join(','));
-
-    return Promise.map(milliChunks, (milliChunk) => {
+    const chunkPromises = _.map(milliChunks, (milliChunk) => {
       const req = {
         RequestItems: {
           // TODO: use constant TABLENAME
@@ -127,12 +124,15 @@ class WeatherDao {
           },
         },
       };
-      return docClient.batchGetAsync(req)
+      return docClient.batchGet(req).promise()
         .then((dataChunk) => {
           logger.debug('db got chunk of size: ' + dataChunk.Responses.Forecasts.length);
           return dataChunk;
         });
-    }).then((dataChunks) => {
+    });
+
+    return Promise.all(chunkPromises)
+    .then((dataChunks) => {
       logger.debug('db got all ' + dataChunks.length + ' chunks');
       let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
       logger.debug('flattened chunks');
@@ -177,7 +177,7 @@ class WeatherDao {
    */
   async putForecastsToDb(forecasts) {
     console.log('db put: first: ' + forecasts[0].msSinceEpoch + '; last: ' + _.last(forecasts).msSinceEpoch);
-    return Promise.map(_.chunk(forecasts, BATCH_PUT_SIZE), (forecastsChunk) => {
+    const chunkPromises = _.map(_.chunk(forecasts, BATCH_PUT_SIZE), (forecastsChunk) => {
       return docClient.batchWriteAsync({
         RequestItems: {
           Forecasts: _.map(forecastsChunk, (forecast) => {
@@ -192,8 +192,11 @@ class WeatherDao {
             };
           }),
         },
-      });
-    }).then((dataChunks) => {
+      }).promise();
+    })
+    
+    return Promise.all(chunkPromises)
+    .then((dataChunks) => {
       const unprocessedItems = _.reduce(_.map(dataChunks, (chunk) => chunk.UnprocessedItems),
         (prev, current) => _.merge(prev, current));
 
