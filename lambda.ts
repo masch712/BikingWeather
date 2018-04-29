@@ -2,7 +2,8 @@
 /* eslint quote-props: ["error", "consistent"]*/
 
 'use strict';
-const Alexa = require('alexa-sdk');
+// const Alexa = require('alexa-sdk');
+import * as Alexa from "alexa-sdk";
 import { instance } from './lib/WeatherDao';
 const weatherDao = instance;
 
@@ -10,6 +11,7 @@ const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 import * as _  from 'lodash';
 import * as logger from './lib/Logger';
 import {DateTime} from 'luxon';
+import { Handler } from './node_modules/@types/aws-lambda/index';
 
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
@@ -18,14 +20,14 @@ const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 // const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
 const APP_ID = undefined;
 
-const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.';
-const STOP_MESSAGE = 'Bye';
+const SPEECH_NOT_IMPLEMENTED: string = 'Aaron says: This feature is not yet implemented.';
+const STOP_MESSAGE: string = 'Bye';
 
 // ====================================================================================================================
 // Editing anything below this line might break your skill.
 // ====================================================================================================================
 
-const handlers = {
+export const handlers: Alexa.Handlers<Alexa.IntentRequest> = {
   'BikingWeatherTomorrow': async function() {
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
@@ -83,12 +85,10 @@ const handlers = {
   },
 };
 
-exports.handler = function(event, context, callback) {
+export const handler = function(event, context, callback) {
   const alexa = Alexa.handler(event, context, callback);
-  alexa.APP_ID = APP_ID;
+  alexa.appId = APP_ID;
   alexa.registerHandlers(handlers);
   logger.debug('calling execute');
   alexa.execute();
 };
-
-exports.handlers = handlers;
