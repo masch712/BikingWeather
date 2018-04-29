@@ -4,20 +4,24 @@
   "description": "",
   "dependencies": {
     "alexa-sdk": "1.0.25",
-    "aws-sdk": "^2.226.1",
+    "aws-sdk": "^2.229.1",
     "bluebird": "^3.5.1",
     "convict": "^4.2.0",
     "js-yaml": "^3.11.0",
-    "lodash": "^4.17.5",
-    "luxon": "^1.0.0",
+    "lodash": "^4.17.10",
+    "luxon": "^1.2.0",
     "superagent": "^3.8.2",
-    "winston": "^3.0.0-rc4",
+    "winston": "^3.0.0-rc5",
     "winston-transport": "^3.2.1"
   },
   "devDependencies": {
+    "@types/jest": "^22.2.3",
+    "@types/lodash": "^4.14.108",
+    "@types/node": "^8.10.10",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
-    "jest": "22.4.3"
+    "jest": "22.4.3",
+    "ts-jest": "^22.4.4"
   },
   "scripts": {
     "test": "jest",

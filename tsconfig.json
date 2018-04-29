@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es6",
+    // "moduleResolution": "node",
+    "outDir": "build/Debug"
+  },
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
+}
