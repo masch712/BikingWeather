@@ -14,7 +14,6 @@ beforeAll(async () => {
     const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
     await weatherDao.putForecastsToDb(forecasts);
   } catch (err) {
-    debugger;
     throw err;
   }
 });

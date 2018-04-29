@@ -113,7 +113,6 @@ class WeatherDao {
     const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
-    debugger;
     logger.debug('db get allMillis: ' + allMillis.join(','));
     const chunkPromises = _.map(milliChunks, (milliChunk) => {
       const req = {
@@ -178,7 +177,7 @@ class WeatherDao {
   async putForecastsToDb(forecasts) {
     console.log('db put: first: ' + forecasts[0].msSinceEpoch + '; last: ' + _.last(forecasts).msSinceEpoch);
     const chunkPromises = _.map(_.chunk(forecasts, BATCH_PUT_SIZE), (forecastsChunk) => {
-      return docClient.batchWriteAsync({
+      return docClient.batchWrite({
         RequestItems: {
           Forecasts: _.map(forecastsChunk, (forecast) => {
             return {

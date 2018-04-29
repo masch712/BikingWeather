@@ -64,7 +64,6 @@ describe('WeatherDao', function() {
         const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
         await weatherDao.putForecastsToDb(forecasts);
         const dbForecasts = await weatherDao.getForecasts('MA', 'Woburn');
-        debugger;
         expect(dbForecasts.length).toBeGreaterThan(200);
         expect(dbForecasts[0].dateTime.toISO()).toEqual(forecasts[0].dateTime.toISO());
         expect(dbForecasts[0].dateTime.diff(forecasts[0].dateTime, 'hours').hours).toEqual(0);

@@ -18,7 +18,7 @@ const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 const APP_ID = undefined;
 
 const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.';
-
+const STOP_MESSAGE = 'Bye';
 
 // ====================================================================================================================
 // Editing anything below this line might break your skill.

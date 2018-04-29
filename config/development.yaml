@@ -3,3 +3,5 @@ wunderground:
 aws:
   dynamodb:
     endpoint: 'http://localhost:8000'
+logging:
+  level: info
