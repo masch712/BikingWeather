@@ -11,8 +11,7 @@
     "lodash": "^4.17.10",
     "luxon": "^1.2.0",
     "superagent": "^3.8.2",
-    "winston": "^3.0.0-rc5",
-    "winston-transport": "^3.2.1"
+    "winston": "^2.4.2"
   },
   "devDependencies": {
     "@types/alexa-sdk": "^1.1.1",
@@ -21,6 +20,7 @@
     "@types/lodash": "^4.14.108",
     "@types/luxon": "^0.5.2",
     "@types/node": "^8.10.10",
+    "@types/winston": "^2.3.9",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
     "jest": "22.4.3",

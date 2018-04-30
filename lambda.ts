@@ -9,7 +9,7 @@ const weatherDao = instance;
 
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 import * as _  from 'lodash';
-import * as logger from './lib/Logger';
+import { logger } from './lib/Logger';
 import {DateTime} from 'luxon';
 import { Handler } from './node_modules/@types/aws-lambda/index';
 
@@ -33,7 +33,7 @@ export const handlers: Alexa.Handlers<Alexa.IntentRequest> = {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
 
       const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
-      logger.debug({msg: 'tomorrows commute forecasts', data: tomorrowsCommuteForecasts});
+      logger.debug('tomorrows commute forecasts: ' + JSON.stringify(tomorrowsCommuteForecasts));
       if (tomorrowsCommuteForecasts.length < 1) {
         throw new Error('unable to retrieve tomorrow\'s forecast');
       }
@@ -54,7 +54,7 @@ export const handlers: Alexa.Handlers<Alexa.IntentRequest> = {
       const nextGoodCommuteForecasts = WeatherForecastUtils
         .getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
 
-      logger.debug({msg: 'next good commute forecasts', data: nextGoodCommuteForecasts});
+      logger.debug('next good commute forecasts' + JSON.stringify(nextGoodCommuteForecasts));
       if (nextGoodCommuteForecasts) {
         const goodForecastDate = nextGoodCommuteForecasts[0].dateTime;
         logger.debug('goodForecastDate: ' + goodForecastDate.toISO());

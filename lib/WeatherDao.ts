@@ -1,6 +1,7 @@
 const superagent = require('superagent');
 const _ = require('lodash');
 import { WeatherForecast } from "../models/WeatherForecast";
+import { logger } from '../lib/Logger';
 const TABLENAME = 'Forecasts';
 const AWS = require('aws-sdk');
 const MILLIS_PER_HOUR = 1000 * 60 * 60;
@@ -9,7 +10,6 @@ const BATCH_GET_SIZE = 100;
 const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
 const config = require('../lib/config.js');
-const logger = require('../lib/Logger');
 
 AWS.config.update({
   region: 'us-east-1',
@@ -221,7 +221,7 @@ function handleWundergroundError(res) {
   if (res.body.response.error != null) {
     const error = new Error('Wunderground API responded with error: '
       + JSON.stringify(res.body.response.error));
-    logger.error(error);
+    logger.error(error.message);
     throw error;
   }
   return res;

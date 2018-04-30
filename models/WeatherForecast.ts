@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 
 import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
 import * as _ from 'lodash';
-import * as logger from '../lib/Logger';
+import {logger} from '../lib/Logger';
 
 export class WeatherForecast {
   msSinceEpoch: number;
