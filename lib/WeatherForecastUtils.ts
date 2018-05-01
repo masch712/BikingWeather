@@ -1,17 +1,21 @@
-const {DateTime, Duration} = require('luxon');
+import { DateObjectUnits } from "luxon";
+import { WeatherForecast } from "../models/WeatherForecast";
+
+import {DateTime, Duration} from 'luxon';
 const _ = require('lodash');
 
-exports.SWEETSPOT_MIN_TEMP = 45;
-exports.SWEETSPOT_MAX_TEMP = 90;
-exports.SWEETSPOT_MAX_PRECIP_PROB = 10;
+export const SWEETSPOT_MIN_TEMP: number = 45;
+export const SWEETSPOT_MAX_TEMP: number = 90;
+export const SWEETSPOT_MAX_PRECIP_PROB: number = 10;
 
-exports.MIDNIGHT = {hour: 0, minute: 0, second: 0, millisecond: 0};
+export const MIDNIGHT: DateObjectUnits = {hour: 0, minute: 0, second: 0, millisecond: 0};
+
 /**
  *
  * @param {WeatherForecast} sample
  * @return {boolean}
  */
-exports.isInSweetSpot = function isInSweetSpot(sample) {
+export function isInSweetSpot(sample: WeatherForecast) {
   if (
     sample.fahrenheit >= exports.SWEETSPOT_MIN_TEMP
         && sample.fahrenheit <= exports.SWEETSPOT_MAX_TEMP
@@ -29,10 +33,9 @@ exports.isInSweetSpot = function isInSweetSpot(sample) {
  * @param {number} endHour
  * @return {WeatherForecast[]} tomorrow's forecasts
  */
-exports.getTomorrowsCommuteForecasts =
-  function getTomorrowsCommuteForecasts(forecasts, startHour, endHour) {
+export function getTomorrowsCommuteForecasts(forecasts: Array<WeatherForecast>, startHour: number, endHour: number) {
   // TODO: stop the local timezone shit, convert to UTC from the start
-    const tz = forecasts[0].dateTime.zone;
+    const tz = forecasts[0].dateTime.zoneName;
     const now = DateTime.local().setZone(tz);
     const tomorrowBeginning = now.plus(Duration.fromISO('P1D'))
       .set({hour: 0, minute: 0, second: 0, millisecond: 0});
@@ -44,7 +47,7 @@ exports.getTomorrowsCommuteForecasts =
     });
   };
 
-exports.getCommuteForecasts = function getCommuteForecasts(forecasts, startHour, endHour) {
+export function getCommuteForecasts(forecasts: Array<WeatherForecast>, startHour: number, endHour: number) {
   const commuteForecasts = _.filter(forecasts, (forecast) => {
     const forecastDateTime = forecast.dateTime;
     return forecastDateTime.hour >= startHour
@@ -62,8 +65,7 @@ exports.getCommuteForecasts = function getCommuteForecasts(forecasts, startHour,
  * @param {number} endHour
  * @return {WeatherForecast[]}
  */
-exports.getFirstGoodCommuteDayForecasts =
-  function getFirstGoodCommuteDayForecasts(forecasts, startHour, endHour) {
+export function getFirstGoodCommuteDayForecasts(forecasts: Array<WeatherForecast>, startHour: number, endHour: number) {
     const dayFormat = 'yyyyMMdd';
     const commuteForecasts = exports.getCommuteForecasts(forecasts, startHour, endHour);
     const commuteForecastsByDay = _.groupBy(commuteForecasts, (forecast) => {

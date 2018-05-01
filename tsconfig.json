@@ -3,7 +3,8 @@
     "allowJs": true,
     "target": "es6",
     // "moduleResolution": "node",
-    "outDir": "build/Debug"
+    "outDir": "build/Debug",
+    "sourceMap": true, //TODO: wtf?  where r the maps?
   },
   "exclude": [
     "node_modules",
