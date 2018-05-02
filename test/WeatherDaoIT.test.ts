@@ -1,6 +1,6 @@
 jest.setTimeout(10000);
 import { instance } from "../lib/WeatherDao";
-const config = require('../lib/config');
+import config from '../lib/config';
 describe('WeatherDao', function() {
   const weatherDao = instance;
 

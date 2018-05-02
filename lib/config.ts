@@ -1,7 +1,8 @@
-const convict = require('convict');
-const yaml = require('js-yaml');
-convict.addParser({extension: ['yml', 'yaml'], parse: yaml.safeLoad});
-const path = require('path');
+import * as yaml from "js-yaml";
+import { resolve } from "path";
+import * as convict from "convict";
+
+convict.addParser({extension: ['yml', 'yaml'], parse: yaml.safeLoad });
 
 // Define a schema
 const config = convict({
@@ -48,11 +49,11 @@ const config = convict({
 
 // Load environment dependent configuration
 const env = config.get('env');
-const configFile = path.resolve('config', env + '.yaml');
+const configFile = resolve('config', env + '.yaml');
 
 config.loadFile(configFile);
 
 // Perform validation
 config.validate({allowed: 'strict'});
 
-module.exports = config;
+export default config;

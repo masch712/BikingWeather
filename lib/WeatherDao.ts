@@ -9,7 +9,7 @@ const MILLIS_PER_DAY = MILLIS_PER_HOUR * 24;
 const BATCH_GET_SIZE = 100;
 const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
-const config = require('../lib/config.js');
+import config from './config';
 
 AWS.config.update({
   region: 'us-east-1',

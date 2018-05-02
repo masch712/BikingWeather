@@ -1,5 +1,5 @@
 import * as winston from "winston";
-const config = require('./config');
+import config from './config';
 
 //TODO: winston v3 @types
 
@@ -11,6 +11,7 @@ export const logger = new winston.Logger({
   })],
 });
 
+//winston3 style:
 // export const logger = winston.createLogger({
 //   transports: [
 //     new winston.transports.Console({
