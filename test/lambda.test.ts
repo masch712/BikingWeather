@@ -1,23 +1,33 @@
-const WeatherForecast = require('../models/WeatherForecast');
 const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
 const utils = require('./utils');
 const _ = require('lodash');
 const {DateTime} = require('luxon');
-const WeatherDao = require('../WeatherDao');
-jest.mock('../WeatherDao');
+
+import { WeatherForecast } from "../models/WeatherForecast";
+
+import { WeatherDao } from "../lib/WeatherDao";
+const mock_getForecast = jest.fn();
+jest.mock('../lib/WeatherDao', () => {
+//  return jest.fn<WeatherDao>().mockImplementation(() => {
+      return {
+        instance: {getForecasts: mock_getForecast}
+      };
+  // });
+});
+
 let bikingWeatherLambda;
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
-const mock_getForecast = jest.fn();
 let originalWeatherForecastUtils = _.clone(WeatherForecastUtils);
 
 beforeAll(() => {
-  WeatherDao.mockImplementationOnce(() => {
-    return {
-      getForecasts: mock_getForecast,
-    };
-  });
-  bikingWeatherLambda = require('../lambda');
+  // WeatherDao.mockImplementationOnce(() => {
+  //   return {
+  //     getForecasts: mock_getForecast,
+  //   };
+  // });
+  bikingWeatherLambda = 
+  require('../lambda');
 });
 afterEach(() => {
   // Reset WeatherForecastUtils mocks

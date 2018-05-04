@@ -2,35 +2,38 @@
 /* eslint quote-props: ["error", "consistent"]*/
 
 'use strict';
-const Alexa = require('alexa-sdk');
-const WeatherDaoLib = require('./WeatherDao');
-const weatherDao = new WeatherDaoLib();
+// const Alexa = require('alexa-sdk');
+import * as Alexa from "alexa-sdk";
+import { instance } from './lib/WeatherDao';
+const weatherDao = instance;
+
 const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
-const _ = require('lodash');
-const logger = require('./lib/Logger');
-const {DateTime} = require('luxon');
+import * as _  from 'lodash';
+import { logger } from './lib/Logger';
+import {DateTime} from 'luxon';
+import { Handler } from './node_modules/@types/aws-lambda/index';
 
 const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
 
 // Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on
 // http://developer.amazon.com.  Make sure to enclose your value in quotes, like this:
 // const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
-const APP_ID = undefined;
+const APP_ID = 'amzn1.ask.skill.1fa8202d-fc67-4847-b95f-955d9eef0c22';
 
-const SPEECH_NOT_IMPLEMENTED = 'Aaron says: This feature is not yet implemented.';
-
+const SPEECH_NOT_IMPLEMENTED: string = 'Aaron says: This feature is not yet implemented.';
+const STOP_MESSAGE: string = 'Bye';
 
 // ====================================================================================================================
 // Editing anything below this line might break your skill.
 // ====================================================================================================================
 
-const handlers = {
+export const handlers: Alexa.Handlers<Alexa.IntentRequest> = {
   'BikingWeatherTomorrow': async function() {
     try {
       const forecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
 
       const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
-      logger.debug({msg: 'tomorrows commute forecasts', data: tomorrowsCommuteForecasts});
+      logger.debug('tomorrows commute forecasts: ' + JSON.stringify(tomorrowsCommuteForecasts));
       if (tomorrowsCommuteForecasts.length < 1) {
         throw new Error('unable to retrieve tomorrow\'s forecast');
       }
@@ -51,7 +54,7 @@ const handlers = {
       const nextGoodCommuteForecasts = WeatherForecastUtils
         .getFirstGoodCommuteDayForecasts(forecasts, 6, 7);
 
-      logger.debug({msg: 'next good commute forecasts', data: nextGoodCommuteForecasts});
+      logger.debug('next good commute forecasts' + JSON.stringify(nextGoodCommuteForecasts));
       if (nextGoodCommuteForecasts) {
         const goodForecastDate = nextGoodCommuteForecasts[0].dateTime;
         logger.debug('goodForecastDate: ' + goodForecastDate.toISO());
@@ -82,12 +85,10 @@ const handlers = {
   },
 };
 
-exports.handler = function(event, context, callback) {
+export const handler = function(event, context, callback) {
   const alexa = Alexa.handler(event, context, callback);
-  alexa.APP_ID = APP_ID;
+  alexa.appId = APP_ID;
   alexa.registerHandlers(handlers);
   logger.debug('calling execute');
   alexa.execute();
 };
-
-exports.handlers = handlers;

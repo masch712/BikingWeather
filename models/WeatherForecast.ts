@@ -1,9 +1,20 @@
-const WeatherForecastUtils = require('../lib/WeatherForecastUtils');
-const {DateTime} = require('luxon');
-const _ = require('lodash');
-const logger = require('../lib/Logger');
+import { DateTime } from "luxon";
 
-class WeatherForecast {
+import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
+import * as _ from 'lodash';
+import {logger} from '../lib/Logger';
+
+export class WeatherForecast {
+  msSinceEpoch: number;
+  fahrenheit: number;
+  windchillFahrenheit: number;
+  condition: string;
+  precipitationProbability: number;
+  isSweetSpot: boolean;
+  dateTime: DateTime;
+  city: string;
+  state: string;
+
   /**
      *
      * @param {number} msSinceEpoch
@@ -15,7 +26,7 @@ class WeatherForecast {
      * @param {Text} state
      */
   constructor(msSinceEpoch, fahrenheit, windchillFahrenheit,
-    condition, precipitationProbability, city, state) {
+    condition, precipitationProbability?, city?, state?) {
     const startTime = DateTime.local().valueOf();
     this.msSinceEpoch = parseInt(msSinceEpoch);
     this.fahrenheit = parseInt(fahrenheit);
@@ -35,5 +46,3 @@ class WeatherForecast {
     return _.omit(this, 'dateTime');
   }
 }
-
-module.exports = WeatherForecast;

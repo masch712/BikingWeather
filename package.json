@@ -4,29 +4,51 @@
   "description": "",
   "dependencies": {
     "alexa-sdk": "1.0.25",
-    "aws-sdk": "^2.226.1",
+    "aws-sdk": "^2.229.1",
     "bluebird": "^3.5.1",
     "convict": "^4.2.0",
     "js-yaml": "^3.11.0",
-    "lodash": "^4.17.5",
-    "luxon": "^1.0.0",
+    "lodash": "^4.17.10",
+    "luxon": "^1.2.0",
     "superagent": "^3.8.2",
-    "winston": "^3.0.0-rc4",
-    "winston-transport": "^3.2.1"
+    "winston": "^2.4.2"
   },
   "devDependencies": {
+    "@types/alexa-sdk": "^1.1.1",
+    "@types/aws-lambda": "^8.10.3",
+    "@types/convict": "^4.2.0",
+    "@types/jest": "^22.2.3",
+    "@types/js-yaml": "^3.11.1",
+    "@types/lodash": "^4.14.108",
+    "@types/luxon": "^0.5.2",
+    "@types/node": "^8.10.10",
+    "@types/winston": "^2.3.9",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
-    "jest": "22.4.3"
+    "jest": "22.4.3",
+    "ts-jest": "^22.4.4",
+    "typescript": "^2.8.3"
   },
   "scripts": {
     "test": "jest",
-    "build": "7z a build\\Release\\build.zip .\\node_modules .\\lib .\\models .\\config .\\*.js",
+    "build": "powershell .\\build\\build.ps1",
     "deploy": "aws s3 cp .\\build\\Release\\build.zip s3://biking-weather-builds"
   },
   "jest": {
     "setupFiles": [
       "./test/setup.js"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
     ]
   },
   "author": "",
