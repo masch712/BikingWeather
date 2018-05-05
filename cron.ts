@@ -3,5 +3,7 @@ const weatherDao = instance;
 
 exports.putForecasts = async () => {
   const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-  return weatherDao.putForecastsToDb(forecasts);
+  return Promise.all([
+    weatherDao.putForecastsToDb(forecasts),
+    weatherDao.deleteOldForecastsFromDb()]);
 };

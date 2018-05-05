@@ -1,15 +1,16 @@
 const superagent = require('superagent');
-const _ = require('lodash');
+import * as _ from "lodash";
 import { WeatherForecast } from "../models/WeatherForecast";
 import { logger } from '../lib/Logger';
+import * as AWS from 'aws-sdk';
 const TABLENAME = 'Forecasts';
-const AWS = require('aws-sdk');
 const MILLIS_PER_HOUR = 1000 * 60 * 60;
 const MILLIS_PER_DAY = MILLIS_PER_HOUR * 24;
 const BATCH_GET_SIZE = 100;
 const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
 import config from './config';
+import { AttributeMap } from "aws-sdk/clients/dynamodb";
 
 AWS.config.update({
   region: 'us-east-1',
@@ -19,7 +20,7 @@ AWS.config.update({
 const dynamodb = new AWS.DynamoDB();
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-const params = {
+const params: AWS.DynamoDB.CreateTableInput = {
   TableName: TABLENAME,
   KeySchema: [
     {AttributeName: 'millis', KeyType: 'HASH'}, // Partition key
@@ -37,9 +38,10 @@ const params = {
 
 export class WeatherDao {
 
+  
   private static _instance: WeatherDao = new WeatherDao();
   apiKey: string;
-
+  
   constructor() {
     if (WeatherDao._instance) {
       throw new Error('Singleton already instantiated');
@@ -47,34 +49,34 @@ export class WeatherDao {
     // TODO: use convict for config
     this.apiKey = config.get('wunderground.apiKey');
   }
-
+  
   public static getInstance(): WeatherDao {
     return WeatherDao._instance;
   }
-
+  
   public tableExists():Promise<Boolean> {
     return dynamodb.describeTable(
       {
         TableName: TABLENAME,
       }
     ).promise()
-      .catch((err) => {
+    .then((data) => {
+      return data.Table != null;
+    })
+    .catch((err) => {
         // TODO: parse the error?
         return false;
-      })
-      .then((data) => {
-        return data.Table != null;
       });
-  }
-
-  /**
+    }
+    
+    /**
      * Returns a promise for an array of WeatherForecasts
      * @param {String} state
      * @param {String} city
      * @return {Promise} Promise for WeatherForecast[] forecast for 10 days
      */
-  public async getForecastFromService(state, city): Promise<Array<WeatherForecast>> {
-    return superagent.get('http://api.wunderground.com/api/'
+    public async getForecastFromService(state, city): Promise<Array<WeatherForecast>> {
+      return superagent.get('http://api.wunderground.com/api/'
       + this.apiKey + '/hourly10day/q/' + state + '/' + city + '.json')
       .then(handleWundergroundError)
       .then((res) => res.body.hourly_forecast)
@@ -93,17 +95,17 @@ export class WeatherDao {
         return forecasts;
       });
   }
-
+  
   private _forecastMillisToGet(hourStart, hourEnd, numDays): Array<Number> {
     const baseDateTime = DateTime.local().setZone('America/New_York')
       .set({hour: 0, minute: 0, second: 0, millisecond: 0});
-    const baseMillis = baseDateTime.valueOf();
+      const baseMillis = baseDateTime.valueOf();
     let allMillis = [];
     if (_.isNumber(hourStart) && _.isNumber(hourEnd)) {
       let startMillis = baseMillis + (hourStart * MILLIS_PER_HOUR);
       let endMillis = baseMillis + (hourEnd * MILLIS_PER_HOUR);
       for (let iDay = 0; iDay < numDays; iDay++) {
-      // TODO: use Luxon in case daylight savings type shit?
+        // TODO: use Luxon in case daylight savings type shit?
         const millisOffset = MILLIS_PER_DAY;
         startMillis += millisOffset;
         endMillis += millisOffset;
@@ -111,14 +113,14 @@ export class WeatherDao {
       }
     } else {
       allMillis = _.range(baseMillis, baseMillis + (MILLIS_PER_DAY * numDays),
-        MILLIS_PER_HOUR);
+      MILLIS_PER_HOUR);
     }
     return allMillis;
   }
-
+  
   async getForecasts(state, city, hourStart?, hourEnd?) {
     const numDays = 10;
-
+    
     const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
@@ -137,25 +139,25 @@ export class WeatherDao {
           logger.debug('db got chunk of size: ' + dataChunk.Responses.Forecasts.length);
           return dataChunk;
         });
-    });
-
-    return Promise.all(chunkPromises)
-    .then((dataChunks) => {
-      logger.debug('db got all ' + dataChunks.length + ' chunks');
-      let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
-      logger.debug('flattened chunks');
-      const forecasts = _.map(flattened, (dbRecord) => {
-        const f = dbRecord.forecast;
-        return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
-          f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
       });
-      logger.debug('mapped forecasts');
-      const sortedForecasts = _.sortBy(forecasts, 'msSinceEpoch');
-      logger.debug('sorted forecasts');
-      return sortedForecasts;
+      
+      return Promise.all(chunkPromises)
+      .then((dataChunks) => {
+        logger.debug('db got all ' + dataChunks.length + ' chunks');
+        let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
+        logger.debug('flattened chunks');
+        const forecasts = _.map(flattened, (dbRecord) => {
+          const f = dbRecord.forecast;
+          return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
+            f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
+          });
+          logger.debug('mapped forecasts');
+          const sortedForecasts = _.sortBy(forecasts, 'msSinceEpoch');
+          logger.debug('sorted forecasts');
+          return sortedForecasts;
     });
   }
-
+  
   async dropTable() {
     const promise = new Promise((resolve, reject) => {
       dynamodb.deleteTable({
@@ -167,7 +169,7 @@ export class WeatherDao {
     });
     return promise;
   }
-
+  
   async createTable() {
     const promise = new Promise((resolve, reject) => {
       dynamodb.createTable(params, (err, data) => {
@@ -177,7 +179,7 @@ export class WeatherDao {
     });
     return promise;
   }
-
+  
   /**
    * Upsert forecasts.
    * @param {WeatherForecast[]} forecasts
@@ -206,11 +208,30 @@ export class WeatherDao {
     return Promise.all(chunkPromises)
     .then((dataChunks) => {
       const unprocessedItems = _.reduce(_.map(dataChunks, (chunk) => chunk.UnprocessedItems),
-        (prev, current) => _.merge(prev, current));
-
+      (prev, current) => _.merge(prev, current));
+      
       if (_.keys(unprocessedItems).length > 0) {
         throw new Error('Failed to put data: ' + JSON.stringify(unprocessedItems));
       }
+    });
+  }
+  
+  deleteOldForecastsFromDb(millisCutoff: number): any {
+    return docClient.scan({
+      TableName: TABLENAME,
+      ProjectionExpression: 'millis',
+    }).promise()
+    .then((queryOutput) => {
+      const itemsToDelete = _.filter(queryOutput.Items as AttributeMap[], (item) => {
+        item.millis < millisCutoff;
+      });
+      const promisesForDelete: Array<Promise<PromiseResult<AWS.DynamoDB.DocumentClient.DeleteItemOutput, AWS.AWSError>> = _.map(itemsToDelete, (item: AttributeMap) => {
+        return docClient.delete({
+          TableName: TABLENAME,
+          Key: item.millis
+        }).promise()
+      });
+      return Promise.all(promisesForDelete);
     });
   }
 }
