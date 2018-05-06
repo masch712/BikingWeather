@@ -14,7 +14,7 @@ import { AttributeMap } from "aws-sdk/clients/dynamodb";
 
 AWS.config.update({
   region: 'us-east-1',
-  endpoint: config.get('aws.dynamodb.endpoint'),
+  endpoint: config.get('aws.dynamodb.endpoint') as string,
 });
 
 const dynamodb = new AWS.DynamoDB();
@@ -185,7 +185,7 @@ export class WeatherDao {
    * @param {WeatherForecast[]} forecasts
    * @return {Promise}
    */
-  async putForecastsToDb(forecasts) {
+  async putForecastsToDb(forecasts: WeatherForecast[]) {
     console.log('db put: first: ' + forecasts[0].msSinceEpoch + '; last: ' + _.last(forecasts).msSinceEpoch);
     const chunkPromises = _.map(_.chunk(forecasts, BATCH_PUT_SIZE), (forecastsChunk) => {
       return docClient.batchWrite({
@@ -216,22 +216,24 @@ export class WeatherDao {
     });
   }
   
-  deleteOldForecastsFromDb(millisCutoff: number): any {
-    return docClient.scan({
+  async deleteOldForecastsFromDb(millisCutoff: number): Promise<number> {
+    return docClient.query({
       TableName: TABLENAME,
-      ProjectionExpression: 'millis',
+      ProjectionExpression: 'millis,citystate',
     }).promise()
     .then((queryOutput) => {
-      const itemsToDelete = _.filter(queryOutput.Items as AttributeMap[], (item) => {
-        item.millis < millisCutoff;
-      });
-      const promisesForDelete: Array<Promise<PromiseResult<AWS.DynamoDB.DocumentClient.DeleteItemOutput, AWS.AWSError>> = _.map(itemsToDelete, (item: AttributeMap) => {
-        return docClient.delete({
+      const itemsToDelete = _.filter(queryOutput.Items, 
+        (item) => item.millis < millisCutoff);
+      const promisesForDelete = _.map(itemsToDelete, (item: AttributeMap) => 
+        docClient.delete({
           TableName: TABLENAME,
           Key: item.millis
         }).promise()
+      );
+      return Promise.all(promisesForDelete)
+      .then((deleteResults) => {
+        return deleteResults.length;
       });
-      return Promise.all(promisesForDelete);
     });
   }
 }

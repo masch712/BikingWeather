@@ -78,7 +78,7 @@ describe('WeatherDao', function() {
       await weatherDao.putForecastsToDb(forecasts);
       const dbForecasts = await weatherDao.deleteOldForecastsFromDb(forecasts[2].msSinceEpoch);
 
-      expect(dbForecasts.length).toBeGreaterThan(17);
+      expect(dbForecasts).toEqual(3);
     });
   });
 });
