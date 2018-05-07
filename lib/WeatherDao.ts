@@ -4,8 +4,8 @@ import { WeatherForecast } from "../models/WeatherForecast";
 import { logger } from '../lib/Logger';
 import * as AWS from 'aws-sdk';
 const TABLENAME = 'Forecasts';
-const MILLIS_PER_HOUR = 1000 * 60 * 60;
-const MILLIS_PER_DAY = MILLIS_PER_HOUR * 24;
+export const MILLIS_PER_HOUR = 1000 * 60 * 60;
+export const MILLIS_PER_DAY = MILLIS_PER_HOUR * 24;
 const BATCH_GET_SIZE = 100;
 const BATCH_PUT_SIZE = 25;
 const {DateTime} = require('luxon');
@@ -23,6 +23,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 const params: AWS.DynamoDB.CreateTableInput = {
   TableName: TABLENAME,
   KeySchema: [
+    //TODO: make the parition key a MILLIS + CITYSTATE hash, make millis the sortkey; index on citystate later
     {AttributeName: 'millis', KeyType: 'HASH'}, // Partition key
     {AttributeName: 'citystate', KeyType: 'RANGE'}, // Sort key
   ],
@@ -35,6 +36,15 @@ const params: AWS.DynamoDB.CreateTableInput = {
     WriteCapacityUnits: 10,
   },
 };
+
+class ForecastTableItem {
+
+  constructor(public millis: number, 
+    public citystate: string, 
+    public forecast: WeatherForecast) {
+
+  }
+}
 
 export class WeatherDao {
 
@@ -215,25 +225,32 @@ export class WeatherDao {
       }
     });
   }
-  
+  //TODO: experiment with hyper-modularity (100 lines per file)
   async deleteOldForecastsFromDb(millisCutoff: number): Promise<number> {
-    return docClient.query({
+    return docClient.scan({
       TableName: TABLENAME,
       ProjectionExpression: 'millis,citystate',
     }).promise()
     .then((queryOutput) => {
-      const itemsToDelete = _.filter(queryOutput.Items, 
-        (item) => item.millis < millisCutoff);
-      const promisesForDelete = _.map(itemsToDelete, (item: AttributeMap) => 
+      logger.debug('Found ' + queryOutput.Count + ' items.');
+      const itemsToDelete = 
+        _.filter(queryOutput.Items as Array<AttributeMap & ForecastTableItem>, 
+          (item) => item.millis <= millisCutoff);
+      logger.debug('Deleting ' + itemsToDelete.length + ' items.');
+      const promisesForDelete = _.map(itemsToDelete, (item) => 
         docClient.delete({
           TableName: TABLENAME,
-          Key: item.millis
-        }).promise()
-      );
+          Key: {
+            millis: item.millis,
+            citystate: item.citystate,
+          },
+        }).promise());
+      
       return Promise.all(promisesForDelete)
       .then((deleteResults) => {
         return deleteResults.length;
       });
+    
     });
   }
 }
