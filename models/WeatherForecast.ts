@@ -4,7 +4,19 @@ import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
 import * as _ from 'lodash';
 import {logger} from '../lib/Logger';
 
-export class WeatherForecast {
+
+export interface DbFriendlyWeatherForecast {
+  msSinceEpoch: number;
+  fahrenheit: number;
+  windchillFahrenheit: number;
+  condition: string;
+  precipitationProbability: number;
+  isSweetSpot: boolean;
+  city: string;
+  state: string;
+}
+
+export class WeatherForecast implements DbFriendlyWeatherForecast {
   msSinceEpoch: number;
   fahrenheit: number;
   windchillFahrenheit: number;
@@ -42,7 +54,9 @@ export class WeatherForecast {
     logger.debug('forecast ' + msSinceEpoch + ': time to instantiate: ' + endTime);
   }
 
-  toDbObj() {
-    return _.omit(this, 'dateTime');
+  toDbObj(): DbFriendlyWeatherForecast {
+    const clone = _.clone(this);
+    delete clone.dateTime;
+    return clone;
   }
 }

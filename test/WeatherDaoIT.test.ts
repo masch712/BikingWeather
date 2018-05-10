@@ -4,7 +4,7 @@ import config from '../lib/config';
 describe('WeatherDao', function() {
   const weatherDao = instance;
 
-  describe('#tableExists', () => {
+  describe.skip('#tableExists', () => {
     it('returns false when not exists', async () => {
       try {
         await weatherDao.dropTable();
@@ -34,7 +34,7 @@ describe('WeatherDao', function() {
     });
   });
 
-  describe('#getForecast(MA, Woburn)', function() {
+  describe.skip('#getForecast(MA, Woburn)', function() {
     it('should return forecasts', function() {
       expect(config.get('wunderground.apiKey')).toBeDefined();
       const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');

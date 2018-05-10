@@ -1,6 +1,6 @@
 const superagent = require('superagent');
 import * as _ from "lodash";
-import { WeatherForecast } from "../models/WeatherForecast";
+import { WeatherForecast, DbFriendlyWeatherForecast } from "../models/WeatherForecast";
 import { logger } from '../lib/Logger';
 import * as AWS from 'aws-sdk';
 const TABLENAME = 'Forecasts';
@@ -14,22 +14,23 @@ import { AttributeMap } from "aws-sdk/clients/dynamodb";
 
 AWS.config.update({
   region: 'us-east-1',
-  endpoint: config.get('aws.dynamodb.endpoint') as string,
 });
 
-const dynamodb = new AWS.DynamoDB();
+const dynamodb = new AWS.DynamoDB({
+  endpoint: config.get('aws.dynamodb.endpoint') as string,
+});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 const params: AWS.DynamoDB.CreateTableInput = {
   TableName: TABLENAME,
   KeySchema: [
     //TODO: make the parition key a MILLIS + CITYSTATE hash, make millis the sortkey; index on citystate later
-    {AttributeName: 'millis', KeyType: 'HASH'}, // Partition key
-    {AttributeName: 'citystate', KeyType: 'RANGE'}, // Sort key
+    {AttributeName: 'primary_key', KeyType: 'HASH'}, // Partition key
+    {AttributeName: 'millis', KeyType: 'RANGE'}, // Sort key
   ],
   AttributeDefinitions: [
+    {AttributeName: 'primary_key', AttributeType: 'S'},
     {AttributeName: 'millis', AttributeType: 'N'},
-    {AttributeName: 'citystate', AttributeType: 'S'},
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -39,11 +40,22 @@ const params: AWS.DynamoDB.CreateTableInput = {
 
 class ForecastTableItem {
 
+  primary_key: string;
   constructor(public millis: number, 
     public citystate: string, 
-    public forecast: WeatherForecast) {
-
+    public forecast: DbFriendlyWeatherForecast) {
+      this.primary_key = ForecastTableItem.primaryKey(forecast.msSinceEpoch, forecast.city, forecast.state);
   }
+
+  public static fromWeatherForecast (forecast: WeatherForecast): ForecastTableItem {
+    return new ForecastTableItem(forecast.msSinceEpoch, forecast.city + forecast.state, forecast.toDbObj());
+  }
+
+  public static primaryKey(millis: number, city: string, state: string): string {
+    return millis.toString() + '_' + city + state;
+  }
+
+
 }
 
 export class WeatherDao {
@@ -106,7 +118,7 @@ export class WeatherDao {
       });
   }
   
-  private _forecastMillisToGet(hourStart, hourEnd, numDays): Array<Number> {
+  private _forecastMillisToGet(hourStart, hourEnd, numDays): Array<number> {
     const baseDateTime = DateTime.local().setZone('America/New_York')
       .set({hour: 0, minute: 0, second: 0, millisecond: 0});
       const baseMillis = baseDateTime.valueOf();
@@ -140,7 +152,7 @@ export class WeatherDao {
         RequestItems: {
           // TODO: use constant TABLENAME
           Forecasts: {
-            Keys: _.map(milliChunk, (millis) => ({millis: millis, citystate: city + state})),
+            Keys: _.map(milliChunk, (millis) => ({primary_key: ForecastTableItem.primaryKey(millis, city, state)})),
           },
         },
       };
@@ -203,16 +215,16 @@ export class WeatherDao {
           Forecasts: _.map(forecastsChunk, (forecast) => {
             return {
               PutRequest: {
-                Item: {
-                  millis: forecast.msSinceEpoch,
-                  citystate: forecast.city + forecast.state,
-                  forecast: forecast.toDbObj(),
-                },
+                Item: ForecastTableItem.fromWeatherForecast(forecast),
               },
             };
           }),
         },
-      }).promise();
+      }).promise()
+      .catch((err) => {
+        debugger;
+        throw err;
+      })
     })
     
     return Promise.all(chunkPromises)
@@ -227,31 +239,30 @@ export class WeatherDao {
   }
   //TODO: experiment with hyper-modularity (100 lines per file)
   async deleteOldForecastsFromDb(millisCutoff: number): Promise<number> {
-    return docClient.scan({
-      TableName: TABLENAME,
-      ProjectionExpression: 'millis,citystate',
-    }).promise()
-    .then((queryOutput) => {
-      logger.debug('Found ' + queryOutput.Count + ' items.');
-      const itemsToDelete = 
-        _.filter(queryOutput.Items as Array<AttributeMap & ForecastTableItem>, 
-          (item) => item.millis <= millisCutoff);
-      logger.debug('Deleting ' + itemsToDelete.length + ' items.');
-      const promisesForDelete = _.map(itemsToDelete, (item) => 
-        docClient.delete({
-          TableName: TABLENAME,
-          Key: {
-            millis: item.millis,
-            citystate: item.citystate,
-          },
-        }).promise());
-      
-      return Promise.all(promisesForDelete)
-      .then((deleteResults) => {
-        return deleteResults.length;
-      });
+    const queryOutput = await docClient.scan({
+        TableName: TABLENAME,
+        ProjectionExpression: 'primary_key',
+      }).promise();
+
+    logger.debug('Found ' + queryOutput.Count + ' items.');
+    const itemsToDelete = 
+      _.filter(queryOutput.Items as Array<AttributeMap & ForecastTableItem>, 
+        (item) => item.millis <= millisCutoff);
     
+    logger.debug('Deleting ' + itemsToDelete.length + ' items.');
+    const promisesForDelete = _.map(itemsToDelete, (item) => 
+      docClient.delete({
+        TableName: TABLENAME,
+        Key: {
+          primary_key: item.primary_key,
+        },
+      }).promise());
+    
+    return Promise.all(promisesForDelete)
+    .then((deleteResults) => {
+      return deleteResults.length;
     });
+    
   }
 }
 
