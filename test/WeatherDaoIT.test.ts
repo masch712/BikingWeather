@@ -1,10 +1,10 @@
-jest.setTimeout(10000);
+jest.setTimeout(30000);
 import { instance } from "../lib/WeatherDao";
 import config from '../lib/config';
 describe('WeatherDao', function() {
   const weatherDao = instance;
 
-  describe.skip('#tableExists', () => {
+  describe('#tableExists', () => {
     it('returns false when not exists', async () => {
       try {
         await weatherDao.dropTable();
@@ -34,7 +34,7 @@ describe('WeatherDao', function() {
     });
   });
 
-  describe.skip('#getForecast(MA, Woburn)', function() {
+  describe('#getForecast(MA, Woburn)', function() {
     it('should return forecasts', function() {
       expect(config.get('wunderground.apiKey')).toBeDefined();
       const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');
@@ -58,7 +58,18 @@ describe('WeatherDao', function() {
         throw err;
       }
     });
+    it('puts em without dying', async () => {
+      const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
+      await weatherDao.putForecastsToDb(forecasts);
+      expect(forecasts.length).toBeGreaterThan(100);
+    });
 
+    it('puts em and gets one', async () => {
+      const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
+      await weatherDao.putForecastsToDb(forecasts);
+      const millis = forecasts[0].msSinceEpoch;
+      const dbForecasts = await weatherDao._getForecastsBatch('MA', 'Woburn', [millis]);
+    })
     it('puts em and gets em', async () => {
       const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
       await weatherDao.putForecastsToDb(forecasts);
@@ -68,6 +79,9 @@ describe('WeatherDao', function() {
       expect(dbForecasts[0].dateTime.diff(forecasts[0].dateTime, 'hours').hours).toEqual(0);
     });
     it('gets em with hour filters', async () => {
+      const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
+      await weatherDao.putForecastsToDb(forecasts);
+      
       const dbForecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
 
       expect(dbForecasts.length).toBeGreaterThan(17);

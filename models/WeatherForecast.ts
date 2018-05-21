@@ -51,7 +51,7 @@ export class WeatherForecast implements DbFriendlyWeatherForecast {
     this.city = city;
     this.state = state;
     const endTime = DateTime.local().valueOf() - startTime;
-    logger.debug('forecast ' + msSinceEpoch + ': time to instantiate: ' + endTime);
+    logger.silly('forecast ' + msSinceEpoch + ': time to instantiate: ' + endTime);
   }
 
   toDbObj(): DbFriendlyWeatherForecast {
