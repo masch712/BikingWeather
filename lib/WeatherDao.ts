@@ -1,6 +1,6 @@
 const superagent = require('superagent');
 import * as _ from "lodash";
-import { WeatherForecast } from "../models/WeatherForecast";
+import { WeatherForecast, DbFriendlyWeatherForecast } from "../models/WeatherForecast";
 import { logger } from '../lib/Logger';
 import * as AWS from 'aws-sdk';
 const TABLENAME = 'Forecasts';
@@ -14,22 +14,25 @@ import { AttributeMap } from "aws-sdk/clients/dynamodb";
 
 AWS.config.update({
   region: 'us-east-1',
-  endpoint: config.get('aws.dynamodb.endpoint') as string,
 });
 
-const dynamodb = new AWS.DynamoDB();
-const docClient = new AWS.DynamoDB.DocumentClient();
+const connParams = {
+  endpoint: config.get('aws.dynamodb.endpoint') as string,
+};
+
+const dynamodb = new AWS.DynamoDB(connParams);
+const docClient = new AWS.DynamoDB.DocumentClient(connParams);
 
 const params: AWS.DynamoDB.CreateTableInput = {
   TableName: TABLENAME,
   KeySchema: [
     //TODO: make the parition key a MILLIS + CITYSTATE hash, make millis the sortkey; index on citystate later
-    {AttributeName: 'millis', KeyType: 'HASH'}, // Partition key
-    {AttributeName: 'citystate', KeyType: 'RANGE'}, // Sort key
+    {AttributeName: 'primary_key', KeyType: 'HASH'}, // Partition key
+    {AttributeName: 'millis', KeyType: 'RANGE'}, // Sort key
   ],
   AttributeDefinitions: [
+    {AttributeName: 'primary_key', AttributeType: 'S'},
     {AttributeName: 'millis', AttributeType: 'N'},
-    {AttributeName: 'citystate', AttributeType: 'S'},
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -39,11 +42,22 @@ const params: AWS.DynamoDB.CreateTableInput = {
 
 class ForecastTableItem {
 
+  primary_key: string;
   constructor(public millis: number, 
     public citystate: string, 
-    public forecast: WeatherForecast) {
-
+    public forecast: DbFriendlyWeatherForecast) {
+      this.primary_key = ForecastTableItem.primaryKey(forecast.msSinceEpoch, forecast.city, forecast.state);
   }
+
+  public static fromWeatherForecast (forecast: WeatherForecast): ForecastTableItem {
+    return new ForecastTableItem(forecast.msSinceEpoch, forecast.city + forecast.state, forecast.toDbObj());
+  }
+
+  public static primaryKey(millis: number, city: string, state: string): string {
+    return millis.toString() + '_' + city + state;
+  }
+
+
 }
 
 export class WeatherDao {
@@ -106,7 +120,7 @@ export class WeatherDao {
       });
   }
   
-  private _forecastMillisToGet(hourStart, hourEnd, numDays): Array<Number> {
+  private _forecastMillisToGet(hourStart, hourEnd, numDays): Array<number> {
     const baseDateTime = DateTime.local().setZone('America/New_York')
       .set({hour: 0, minute: 0, second: 0, millisecond: 0});
       const baseMillis = baseDateTime.valueOf();
@@ -128,44 +142,54 @@ export class WeatherDao {
     return allMillis;
   }
   
-  async getForecasts(state, city, hourStart?, hourEnd?) {
-    const numDays = 10;
-    
-    const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
+  async _getForecastsBatch(state, city, allMillis: Array<number>): Promise<Array<WeatherForecast>> {
     const milliChunks = _.chunk(allMillis, BATCH_GET_SIZE);
 
-    logger.debug('db get allMillis: ' + allMillis.join(','));
-    const chunkPromises = _.map(milliChunks, (milliChunk) => {
+    logger.silly('db get allMillis: ' + allMillis.join(','));
+    const chunkPromises = _.map(milliChunks, async (milliChunk) => {
       const req = {
         RequestItems: {
           // TODO: use constant TABLENAME
           Forecasts: {
-            Keys: _.map(milliChunk, (millis) => ({millis: millis, citystate: city + state})),
+            Keys: _.map(milliChunk, (millis) => ({
+              primary_key: ForecastTableItem.primaryKey(millis, city, state),
+              millis: millis,
+            })),
           },
         },
       };
-      return docClient.batchGet(req).promise()
-        .then((dataChunk) => {
-          logger.debug('db got chunk of size: ' + dataChunk.Responses.Forecasts.length);
-          return dataChunk;
-        });
-      });
-      
-      return Promise.all(chunkPromises)
-      .then((dataChunks) => {
-        logger.debug('db got all ' + dataChunks.length + ' chunks');
-        let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
-        logger.debug('flattened chunks');
-        const forecasts = _.map(flattened, (dbRecord) => {
-          const f = dbRecord.forecast;
-          return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
-            f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
-          });
-          logger.debug('mapped forecasts');
-          const sortedForecasts = _.sortBy(forecasts, 'msSinceEpoch');
-          logger.debug('sorted forecasts');
-          return sortedForecasts;
+      try {
+        // const dataChunk = await docClient.batchGet(req).promise();
+        const dataChunk = await docClient.batchGet(req).promise();
+        logger.debug('db got chunk of size: ' + dataChunk.Responses.Forecasts.length);
+        return dataChunk;
+      } catch (err) {
+        logger.error('Error getting chunk: ' + err);
+        return Promise.reject(err);
+      }
     });
+    
+    const dataChunks = await Promise.all(chunkPromises)
+    logger.debug('db got all ' + dataChunks.length + ' chunks');
+    let flattened = _.flatten(_.map(dataChunks, (chunk) => chunk.Responses.Forecasts));
+    logger.debug('flattened chunks');
+    const forecasts = _.map(flattened, (dbRecord) => {
+      const f = dbRecord.forecast as WeatherForecast;
+      return new WeatherForecast(f.msSinceEpoch, f.fahrenheit,
+        f.windchillFahrenheit, f.condition, f.precipitationProbability, f.city, f.state);
+    });
+    return forecasts;
+  }
+
+  async getForecasts(state, city, hourStart?, hourEnd?) {
+    const numDays = 10;
+    
+    const allMillis = this._forecastMillisToGet(hourStart, hourEnd, numDays);
+    const forecasts = await this._getForecastsBatch(state, city, allMillis);
+    logger.debug('mapped forecasts');
+    const sortedForecasts = _.sortBy(forecasts, 'msSinceEpoch');
+    logger.debug('sorted forecasts');
+    return sortedForecasts;
   }
   
   async dropTable() {
@@ -189,69 +213,116 @@ export class WeatherDao {
     });
     return promise;
   }
-  
+
   /**
    * Upsert forecasts.
    * @param {WeatherForecast[]} forecasts
    * @return {Promise}
    */
   async putForecastsToDb(forecasts: WeatherForecast[]) {
-    console.log('db put: first: ' + forecasts[0].msSinceEpoch + '; last: ' + _.last(forecasts).msSinceEpoch);
     const chunkPromises = _.map(_.chunk(forecasts, BATCH_PUT_SIZE), (forecastsChunk) => {
       return docClient.batchWrite({
         RequestItems: {
           Forecasts: _.map(forecastsChunk, (forecast) => {
+            const item = ForecastTableItem.fromWeatherForecast(forecast);
             return {
               PutRequest: {
-                Item: {
-                  millis: forecast.msSinceEpoch,
-                  citystate: forecast.city + forecast.state,
-                  forecast: forecast.toDbObj(),
-                },
+                Item: item,
               },
             };
           }),
         },
-      }).promise();
-    })
-    
-    return Promise.all(chunkPromises)
-    .then((dataChunks) => {
+      }).promise()
+      .catch((err) => {
+        debugger;
+        throw err;
+      })
+    });
+  
+    try{
+      const dataChunks = await Promise.all(chunkPromises);
       const unprocessedItems = _.reduce(_.map(dataChunks, (chunk) => chunk.UnprocessedItems),
       (prev, current) => _.merge(prev, current));
       
       if (_.keys(unprocessedItems).length > 0) {
-        throw new Error('Failed to put data: ' + JSON.stringify(unprocessedItems));
+        return this.resubmitUnprocessedItems(unprocessedItems);
       }
-    });
+    } catch (err) {
+      logger.debug('failed to put chunks: ' + err);
+      return Promise.reject(err);
+    }
   }
+
+  //TODO: test this
+  async resubmitUnprocessedItems(unprocessedItems: AWS.DynamoDB.DocumentClient.BatchWriteItemRequestMap, attemptCount: number = 0, maxAttempts: number = 30)
+  {
+    return docClient.batchWrite({
+      RequestItems: unprocessedItems
+    }).promise()
+    .then((result) => {
+      const newUnprocessedItems = Object.values(result.UnprocessedItems)[0];
+      if (attemptCount < maxAttempts) {
+        if (newUnprocessedItems.length > 0) {
+          attemptCount++;
+          logger.debug('Resubmitting ' + newUnprocessedItems.length + ' items; attemptCount: ' + attemptCount);
+          return this.resubmitUnprocessedItems(result.UnprocessedItems, attemptCount, maxAttempts);
+        }
+        else {
+          return result;
+        }
+      }
+      else {
+        throw new Error('Unable to submit ' + newUnprocessedItems.length + ' UnprocessedItems after ' + attemptCount + ' attempts.');
+      }
+    })
+  }
+
+  async resubmitUnprocessedItemsIndividually(unprocessedItems: AWS.DynamoDB.DocumentClient.BatchWriteItemRequestMap, attemptCount: number = 0, maxAttempts: number = 30)
+  {
+    const promises = _.map(unprocessedItems[TABLENAME], (item) => {
+      return docClient.put({
+          TableName: TABLENAME,
+          Item: item.PutRequest.Item,
+      }).promise();
+    });
+
+    try {
+      logger.debug('Attempting to resubmit ' + promises.length + ' items');
+      const results = await Promise.all(promises);
+    }
+    catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
   //TODO: experiment with hyper-modularity (100 lines per file)
   async deleteOldForecastsFromDb(millisCutoff: number): Promise<number> {
-    return docClient.scan({
-      TableName: TABLENAME,
-      ProjectionExpression: 'millis,citystate',
-    }).promise()
-    .then((queryOutput) => {
-      logger.debug('Found ' + queryOutput.Count + ' items.');
-      const itemsToDelete = 
-        _.filter(queryOutput.Items as Array<AttributeMap & ForecastTableItem>, 
-          (item) => item.millis <= millisCutoff);
-      logger.debug('Deleting ' + itemsToDelete.length + ' items.');
-      const promisesForDelete = _.map(itemsToDelete, (item) => 
-        docClient.delete({
-          TableName: TABLENAME,
-          Key: {
-            millis: item.millis,
-            citystate: item.citystate,
-          },
-        }).promise());
-      
-      return Promise.all(promisesForDelete)
-      .then((deleteResults) => {
-        return deleteResults.length;
-      });
+    const queryOutput = await docClient.scan({
+        TableName: TABLENAME,
+        ProjectionExpression: 'primary_key,millis',
+        
+      }).promise();
+
+    logger.debug('Found ' + queryOutput.Count + ' items.');
+    const itemsToDelete = 
+      _.filter(queryOutput.Items as Array<AttributeMap & ForecastTableItem>, 
+        (item) => item.millis <= millisCutoff);
     
+    logger.debug('Deleting ' + itemsToDelete.length + ' items.');
+    const promisesForDelete = _.map(itemsToDelete, (item) => 
+      docClient.delete({
+        TableName: TABLENAME,
+        Key: {
+          primary_key: item.primary_key,
+          millis: item.millis,
+        },
+      }).promise());
+    
+    return Promise.all(promisesForDelete)
+    .then((deleteResults) => {
+      return deleteResults.length;
     });
+    
   }
 }
 

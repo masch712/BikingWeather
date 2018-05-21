@@ -1,0 +1,7 @@
+{
+  "primary_key": {"S": "111_WoburnMA"},
+  "millis": {"N": "111"},
+  "forecast": {"M": {
+    "wtf": {"S": "niner"}
+  }}
+}

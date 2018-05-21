@@ -6,7 +6,7 @@
     "outDir": "build/Debug",
     "sourceMap": true, //TODO: wtf?  where r the maps?
     "lib": [
-      "es2015"
+      "es2017"
     ]
   },
   "exclude": [
