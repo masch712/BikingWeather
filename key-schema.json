@@ -1,0 +1,4 @@
+[
+    {"AttributeName": "primary_key", "KeyType": "HASH"},
+    {"AttributeName": "millis", "KeyType": "RANGE"}
+]

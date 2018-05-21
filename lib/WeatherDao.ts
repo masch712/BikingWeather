@@ -26,7 +26,6 @@ const docClient = new AWS.DynamoDB.DocumentClient(connParams);
 const params: AWS.DynamoDB.CreateTableInput = {
   TableName: TABLENAME,
   KeySchema: [
-    //TODO: make the parition key a MILLIS + CITYSTATE hash, make millis the sortkey; index on citystate later
     {AttributeName: 'primary_key', KeyType: 'HASH'}, // Partition key
     {AttributeName: 'millis', KeyType: 'RANGE'}, // Sort key
   ],
