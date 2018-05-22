@@ -1,0 +1,4 @@
+[
+    {"AttributeName": "primary_key", "AttributeType": "S"},
+    {"AttributeName": "millis", "AttributeType": "N"}
+]

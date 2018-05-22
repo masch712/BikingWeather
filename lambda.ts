@@ -60,7 +60,10 @@ export const handlers: Alexa.Handlers<Alexa.IntentRequest> = {
         logger.debug('goodForecastDate: ' + goodForecastDate.toISO());
         const thisMorning = DateTime.local().setZone(goodForecastDate.zone).set(MIDNIGHT);
         const durationTilGood = Math.floor(goodForecastDate.diff(thisMorning, 'days').days);
-        const daysTilGoodString = `in ${durationTilGood} days`;
+        let daysTilGoodString = `in ${durationTilGood} days`;
+        if (durationTilGood === 1) {
+          daysTilGoodString = 'tomorrow';
+        }
         this.response.speak(daysTilGoodString);
       } else {
         this.response.speak('you\'re doomed, the weather is bad for 10 days.');
