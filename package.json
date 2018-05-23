@@ -32,7 +32,7 @@
   "scripts": {
     "test": "jest",
     "build": "powershell .\\build\\build.ps1",
-    "deploy": "aws s3 cp .\\build\\Release\\build.zip s3://biking-weather-builds"
+    "deploy": "powershell .\\build\\deploy.ps1"
   },
   "jest": {
     "setupFiles": [
