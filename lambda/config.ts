@@ -1,19 +1,11 @@
-/* eslint-disable  func-names */
-/* eslint quote-props: ["error", "consistent"]*/
-
-'use strict';
-// const Alexa = require('alexa-sdk');
 import * as Alexa from "alexa-sdk";
-import { instance } from './lib/WeatherDao';
-const weatherDao = instance;
+import { instance } from '../lib/UserConfigDao';
+const userConfigDao = instance;
 
-const WeatherForecastUtils = require('./lib/WeatherForecastUtils');
 import * as _  from 'lodash';
-import { logger } from './lib/Logger';
+import { logger } from '../lib/Logger';
 import {DateTime} from 'luxon';
-import { Handler } from './node_modules/@types/aws-lambda/index';
-
-const MIDNIGHT = WeatherForecastUtils.MIDNIGHT;
+import { Handler } from '../node_modules/@types/aws-lambda/index';
 
 // Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on
 // http://developer.amazon.com.  Make sure to enclose your value in quotes, like this:
