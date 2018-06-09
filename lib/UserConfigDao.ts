@@ -174,4 +174,4 @@ export class UserConfigDao {
   }
 }
 
-export const instance = UserConfigDao.getInstance();
+export const userConfigDaoInstance = UserConfigDao.getInstance();

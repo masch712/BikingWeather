@@ -3,7 +3,7 @@ export class UserConfig {
     public userId: string,
     public city: string,
     public state: string,
-    public config: object,
+    public config?: object,
   ) {
 
   }

@@ -3,8 +3,9 @@
 
 'use strict';
 // const Alexa = require('alexa-sdk');
-import { instance } from '../lib/WeatherDao';
-const weatherDao = instance;
+import { weatherDaoInstance } from '../lib/WeatherDao';
+const weatherDao = weatherDaoInstance;
+
 
 import * as WeatherForecastUtils from '../lib/WeatherForecastUtils';
 import * as _ from 'lodash';
@@ -36,6 +37,7 @@ export const BikingWeatherTomorrow: RequestHandler = {
       && request.intent.name === 'BikingWeatherTomorrow';
   },
   handle: async function (handlerInput: HandlerInput): Promise<Response> {
+    const config = await userConfig
     const forecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
 
     const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);
