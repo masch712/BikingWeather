@@ -325,7 +325,7 @@ export class WeatherDao {
   }
 }
 
-export const  instance = WeatherDao.getInstance();
+export const  weatherDaoInstance = WeatherDao.getInstance();
 
 function handleWundergroundError(res) {
   if (res.body.response.error != null) {
