@@ -25,10 +25,6 @@ const APP_ID = 'amzn1.ask.skill.1fa8202d-fc67-4847-b95f-955d9eef0c22';
 const SPEECH_NOT_IMPLEMENTED: string = 'Aaron says: This feature is not yet implemented.';
 const STOP_MESSAGE: string = 'Bye';
 
-// ====================================================================================================================
-// Editing anything below this line might break your skill.
-// ====================================================================================================================
-
 export const BikingWeatherTomorrow: RequestHandler = {
   canHandle: function (handlerInput: HandlerInput): Promise<boolean> | boolean {
     const request = handlerInput.requestEnvelope.request;
@@ -37,7 +33,7 @@ export const BikingWeatherTomorrow: RequestHandler = {
       && request.intent.name === 'BikingWeatherTomorrow';
   },
   handle: async function (handlerInput: HandlerInput): Promise<Response> {
-    const config = await userConfig
+    // const config = await userConfig TODO: implement this
     const forecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
 
     const tomorrowsCommuteForecasts = WeatherForecastUtils.getTomorrowsCommuteForecasts(forecasts, 6, 7);

@@ -1,8 +1,7 @@
 jest.setTimeout(30000);
-import { instance } from "../lib/WeatherDao";
+import { weatherDaoInstance as weatherDao } from "../lib/WeatherDao";
 import config from '../lib/config';
-describe('WeatherDao', function() {
-  const weatherDao = instance;
+describe('WeatherDao', function () {
 
   describe('#tableExists', () => {
     it('returns false when not exists', async () => {
@@ -34,11 +33,11 @@ describe('WeatherDao', function() {
     });
   });
 
-  describe('#getForecast(MA, Woburn)', function() {
-    it('should return forecasts', function() {
+  describe('#getForecast(MA, Woburn)', function () {
+    it('should return forecasts', function () {
       expect(config.get('wunderground.apiKey')).toBeDefined();
       const forecastPromise = weatherDao.getForecastFromService('MA', 'Woburn');
-      return forecastPromise.then(function(forecasts) {
+      return forecastPromise.then(function (forecasts) {
         expect(forecasts.length).toBe(240);
         expect(forecasts[0].msSinceEpoch).toBeDefined();
       });
@@ -60,19 +59,19 @@ describe('WeatherDao', function() {
     });
     it('puts em without dying', async () => {
       const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-      await weatherDao.putForecastsToDb(forecasts);
+      await weatherDao.putForecastsToDb(forecasts, 'Woburn', 'MA');
       expect(forecasts.length).toBeGreaterThan(100);
     });
 
     it('puts em and gets one', async () => {
       const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-      await weatherDao.putForecastsToDb(forecasts);
+      await weatherDao.putForecastsToDb(forecasts, 'Woburn', 'MA');
       const millis = forecasts[0].msSinceEpoch;
       const dbForecasts = await weatherDao._getForecastsBatch('MA', 'Woburn', [millis]);
     })
     it('puts em and gets em', async () => {
       const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-      await weatherDao.putForecastsToDb(forecasts);
+      await weatherDao.putForecastsToDb(forecasts, 'Woburn', 'MA');
       const dbForecasts = await weatherDao.getForecasts('MA', 'Woburn');
       expect(dbForecasts.length).toBeGreaterThan(200);
       expect(dbForecasts[0].dateTime.toISO()).toEqual(forecasts[0].dateTime.toISO());
@@ -80,19 +79,11 @@ describe('WeatherDao', function() {
     });
     it('gets em with hour filters', async () => {
       const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-      await weatherDao.putForecastsToDb(forecasts);
-      
+      await weatherDao.putForecastsToDb(forecasts, 'Woburn', 'MA');
+
       const dbForecasts = await weatherDao.getForecasts('MA', 'Woburn', 6, 7);
 
       expect(dbForecasts.length).toBeGreaterThan(17);
-    });
-    
-    it('deletes em', async () => {
-      const forecasts = await weatherDao.getForecastFromService('MA', 'Woburn');
-      await weatherDao.putForecastsToDb(forecasts);
-      const dbForecasts = await weatherDao.deleteOldForecastsFromDb(forecasts[2].msSinceEpoch);
-
-      expect(dbForecasts).toEqual(3);
     });
   });
 });

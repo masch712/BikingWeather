@@ -5,7 +5,7 @@ import { SkillBuilders } from "ask-sdk-core";
 const skillBuilder = SkillBuilders.custom();
 
 /* LAMBDA SETUP */
-exports.handler = skillBuilder
+export const handler = skillBuilder
   .addRequestHandlers(
     UserConfigIntentHandler,
     BikingWeatherTomorrow,

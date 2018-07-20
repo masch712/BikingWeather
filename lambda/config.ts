@@ -10,17 +10,10 @@ import { HandlerInput, ErrorHandler, SkillBuilders, RequestHandler } from "ask-s
 import { UserConfig } from '../models/UserConfig';
 
 
-// Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on
-// http://developer.amazon.com.  Make sure to enclose your value in quotes, like this:
-// const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
 const APP_ID = 'amzn1.ask.skill.1fa8202d-fc67-4847-b95f-955d9eef0c22';
 
 const SPEECH_NOT_IMPLEMENTED: string = 'Aaron says: This feature is not yet implemented.';
 const STOP_MESSAGE: string = 'Bye';
-
-// ====================================================================================================================
-// Editing anything below this line might break your skill.
-// ====================================================================================================================
 
 export const UserConfigIntentHandler: RequestHandler = {
   canHandle: function (handlerInput: HandlerInput): Promise<boolean> | boolean {
@@ -30,7 +23,7 @@ export const UserConfigIntentHandler: RequestHandler = {
       && request.intent.name === 'UserConfig'
       && request.dialogState !== 'COMPLETED';
   },
-  handle: async function (handlerInput: HandlerInput): Promise<Response> | Response {
+  handle: async function (handlerInput: HandlerInput): Promise<Response> {
     const request = handlerInput.requestEnvelope.request as IntentRequest;
     const intent = request.intent;
     const dialogState = request.dialogState;
